@@ -1,29 +1,68 @@
-/* Styling the dropdown */
-select {
+:root {
+    --primary: #8b5cf6;
+    --bg: #020617;
+    --card: #1e293b;
+    --text: #f8fafc;
+}
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.card {
+    background: var(--card);
+    padding: 2rem;
+    border-radius: 20px;
+    width: 350px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    position: relative;
+}
+
+.hidden { display: none; }
+
+h1 { margin-top: 0; font-size: 1.8rem; }
+h1 span { color: var(--primary); }
+
+.input-group { margin-bottom: 1.2rem; }
+
+label { display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px; }
+
+input, select {
     width: 100%;
     padding: 12px;
     background: #0f172a;
     border: 1px solid #334155;
-    border-radius: 8px;
+    border-radius: 10px;
     color: white;
+    box-sizing: border-box;
+}
+
+.checkbox-group { display: flex; align-items: center; gap: 8px; margin-bottom: 1rem; font-size: 0.8rem; }
+.checkbox-group input { width: auto; }
+
+button {
+    width: 100%;
+    padding: 12px;
+    background: var(--primary);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: bold;
     cursor: pointer;
 }
 
-/* Styling the radio buttons */
-.radio-group {
-    display: flex;
-    gap: 15px;
-    margin-top: 5px;
-}
-
-.radio-item {
-    font-size: 0.85rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.radio-item input {
-    width: auto; /* Overrides the 100% width from earlier */
+.back-btn {
+    background: none;
+    color: #94a3b8;
+    width: auto;
+    padding: 0;
+    margin-bottom: 10px;
+    font-size: 0.8rem;
 }
