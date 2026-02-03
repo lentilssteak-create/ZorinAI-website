@@ -1,55 +1,93 @@
-const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1468295462669779004/t7SBMQhdzCaoNrgWDlNRGYRe8iplgYnJDz4h4favBjbokgp1Rgk9dvlB8mWxodT3iVgK";
+const WEBHOOK_URL = "https://discord.com/api/webhooks/1468295462669779004/t7SBMQhdzCaoNrgWDlNRGYRe8iplgYnJDz4h4favBjbokgp1Rgk9dvlB8mWxodT3iVgK";
 
-// 1. LOAD SAVED CREDENTIALS
+// 1. Check Saved Credentials
 window.onload = () => {
-    const savedName = localStorage.getItem('zorin_username');
+    const savedName = localStorage.getItem('zorin_name');
     if (savedName) {
         document.getElementById('username').value = savedName;
+        document.getElementById('rememberMe').checked = true;
     }
 };
 
-document.getElementById('requestForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    // 2. SAVE CREDENTIALS FOR NEXT TIME
+function nextStep() {
     const name = document.getElementById('username').value;
-    localStorage.setItem('zorin_username', name);
+    if (!name) return alert("Please enter a name");
+    
+    // Save/Clear Credentials logic
+    if (document.getElementById('rememberMe').checked) {
+        localStorage.setItem('zorin_name', name);
+    } else {
+        localStorage.removeItem('zorin_name');
+    }
 
-    // 3. GET VALUES
-    const subject = document.getElementById('subject').value;
-    const urgency = document.querySelector('input[name="urgency"]:checked').value;
-    const details = document.getElementById('details').value || "No details provided.";
+    document.getElementById('setup-step').classList.add('hidden');
+    document.getElementById('request-step').classList.remove('hidden');
+}
 
-    const submitBtn = document.getElementById('submitBtn');
-    submitBtn.disabled = true;
-    submitBtn.innerText = "Processing...";
+function prevStep() {
+    document.getElementById('setup-step').classList.remove('hidden');
+    document.getElementById('request-step').classList.add('hidden');
+}
 
-    // 4. PREPARE DISCORD MESSAGE
+function toggleSubOptions() {
+    const sub = document.getElementById('subject').value;
+    const subOptions = document.getElementById('subOptions');
+    const grindOpt = document.getElementById('grindOption');
+    const amountGroup = document.getElementById('amountGroup');
+
+    subOptions.classList.remove('hidden');
+    
+    if (sub === "Science") {
+        grindOpt.style.display = "none"; // Science only does homework
+        document.getElementById('serviceType').value = "Homework";
+        amountGroup.classList.add('hidden');
+    } else {
+        grindOpt.style.display = "block";
+        grindOpt.innerText = sub === "Maths" ? "XP Grinding" : "SRP Grinding";
+    }
+}
+
+function toggleAmountInput() {
+    const type = document.getElementById('serviceType').value;
+    const sub = document.getElementById('subject').value;
+    const amountGroup = document.getElementById('amountGroup');
+    const amountInput = document.getElementById('amount');
+
+    if (type === "Grind") {
+        amountGroup.classList.remove('hidden');
+        amountInput.max = (sub === "Maths") ? 999999 : 9999;
+        amountInput.placeholder = `Max ${amountInput.max}`;
+    } else {
+        amountGroup.classList.add('hidden');
+    }
+}
+
+document.getElementById('zorinForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+
+    const data = {
+        name: document.getElementById('username').value,
+        subject: document.getElementById('subject').value,
+        type: document.getElementById('serviceType').value,
+        amount: document.getElementById('amount').value || "N/A"
+    };
+
     const payload = {
         embeds: [{
-            title: "🚀 New ZorinAI Request",
-            color: urgency === "High" ? 15548997 : 5763719, // Red if high, Green if not
+            title: "New ZorinAI Request",
+            color: 9142518,
             fields: [
-                { name: "Student", value: name, inline: true },
-                { name: "Subject", value: subject, inline: true },
-                { name: "Urgency", value: urgency, inline: true },
-                { name: "Details", value: details }
-            ],
-            footer: { text: "ZorinAI Web Portal" }
+                { name: "Student", value: data.name, inline: true },
+                { name: "Subject", value: data.subject, inline: true },
+                { name: "Type", value: data.type, inline: true },
+                { name: "Value", value: data.amount }
+            ]
         }]
     };
 
-    try {
-        await fetch(DISCORD_WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        document.getElementById('status').innerText = "Request Sent! Check Discord.";
-    } catch (err) {
-        document.getElementById('status').innerText = "Failed to send.";
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerText = "Submit to Discord";
-    }
+    await fetch(WEBHOOK_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)});
+    alert("Request Sent!");
+    btn.disabled = false;
 });
