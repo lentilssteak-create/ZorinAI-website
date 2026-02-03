@@ -64,12 +64,20 @@
 
     <div id="main-menu" class="view">
         <div class="notice-box">⚠️ Commercial use is prohibited.</div>
-        <div id="active-content" class="hidden">
-            <button class="submit-btn" style="width:100%" onclick="showView('request-view')">🆕 New Request</button>
+        
+        <div id="active-content" class="hidden" style="display:flex; flex-direction:column; gap:10px;">
+            <button class="submit-btn" onclick="showView('request-view')">🆕 New Request</button>
         </div>
+
         <div id="unpaid-content" class="hidden">
             <div class="unpaid-box"><strong>❌ Payment Required</strong></div>
         </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+            <button class="submit-btn" style="background:#333" onclick="window.location.href='about.html'">ℹ️ About</button>
+            <button class="submit-btn" style="background:#333" onclick="window.location.href='settings.html'">⚙️ Settings</button>
+        </div>
+
         <button id="admin-btn" class="submit-btn hidden" style="background:var(--danger); margin-top:10px" onclick="showView('admin-view')">🛡️ Admin Panel</button>
         <div class="back-link" onclick="auth.signOut()">Logout</div>
     </div>
