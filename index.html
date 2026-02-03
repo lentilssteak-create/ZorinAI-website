@@ -1,33 +1,45 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZorinAI | Request Submission</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="container">
-        <div class="card">
-            <h1>Zorin<span>AI</span></h1>
-            <p>Submit your homework request below.</p>
-            
-            <form id="requestForm">
-                <div class="input-group">
-                    <label for="username">Name / ID</label>
-                    <input type="text" id="username" placeholder="Enter your name" required>
-                </div>
-
-                <div class="input-group">
-                    <label for="request">Homework Request</label>
-                    <textarea id="request" rows="5" placeholder="Describe what you need help with..." required></textarea>
-                </div>
-
-                <button type="submit" id="submitBtn">Send Request</button>
-            </form>
-            <div id="status"></div>
+<div class="card">
+    <h1>Zorin<span>AI</span></h1>
+    
+    <form id="requestForm">
+        <div class="input-group">
+            <label for="username">Student Name</label>
+            <input type="text" id="username" placeholder="Your name" required>
         </div>
-    </div>
-    <script src="script.js"></script>
-</body>
-</html>
+
+        <div class="input-group">
+            <label for="subject">Subject</label>
+            <select id="subject" required>
+                <option value="" disabled selected>Select a subject</option>
+                <option value="Math">Math</option>
+                <option value="Science">Science</option>
+                <option value="English">English</option>
+                <option value="History">History</option>
+                <option value="Coding">Coding</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label>Urgency</label>
+            <div class="radio-group">
+                <label class="radio-item">
+                    <input type="radio" name="urgency" value="Low" checked> Low
+                </label>
+                <label class="radio-item">
+                    <input type="radio" name="urgency" value="Medium"> Medium
+                </label>
+                <label class="radio-item">
+                    <input type="radio" name="urgency" value="High"> High 🔥
+                </label>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="details">Additional Details</label>
+            <textarea id="details" rows="3" placeholder="Any specific instructions?"></textarea>
+        </div>
+
+        <button type="submit" id="submitBtn">Submit to Discord</button>
+    </form>
+    <div id="status"></div>
+</div>
