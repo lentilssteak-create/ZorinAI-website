@@ -1,63 +1,55 @@
-// Replace this with your actual Discord Webhook URL
 const DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1468295462669779004/t7SBMQhdzCaoNrgWDlNRGYRe8iplgYnJDz4h4favBjbokgp1Rgk9dvlB8mWxodT3iVgK";
 
-const form = document.getElementById('requestForm');
-const usernameInput = document.getElementById('username');
-const statusDiv = document.getElementById('status');
-
-// Load saved credentials on page load
+// 1. LOAD SAVED CREDENTIALS
 window.onload = () => {
-    const savedName = localStorage.getItem('zorin_user');
+    const savedName = localStorage.getItem('zorin_username');
     if (savedName) {
-        usernameInput.value = savedName;
+        document.getElementById('username').value = savedName;
     }
 };
 
-form.addEventListener('submit', async (e) => {
+document.getElementById('requestForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    
-    const username = usernameInput.value;
-    const requestText = document.getElementById('request').value;
+
+    // 2. SAVE CREDENTIALS FOR NEXT TIME
+    const name = document.getElementById('username').value;
+    localStorage.setItem('zorin_username', name);
+
+    // 3. GET VALUES
+    const subject = document.getElementById('subject').value;
+    const urgency = document.querySelector('input[name="urgency"]:checked').value;
+    const details = document.getElementById('details').value || "No details provided.";
+
     const submitBtn = document.getElementById('submitBtn');
-
-    // Save name for next time
-    localStorage.setItem('zorin_user', username);
-
     submitBtn.disabled = true;
-    submitBtn.innerText = "Sending...";
+    submitBtn.innerText = "Processing...";
 
+    // 4. PREPARE DISCORD MESSAGE
     const payload = {
         embeds: [{
-            title: "📚 New Homework Request",
-            color: 6511345, // Indigo color
+            title: "🚀 New ZorinAI Request",
+            color: urgency === "High" ? 15548997 : 5763719, // Red if high, Green if not
             fields: [
-                { name: "User", value: username, inline: true },
-                { name: "Request", value: requestText }
+                { name: "Student", value: name, inline: true },
+                { name: "Subject", value: subject, inline: true },
+                { name: "Urgency", value: urgency, inline: true },
+                { name: "Details", value: details }
             ],
-            timestamp: new Date()
+            footer: { text: "ZorinAI Web Portal" }
         }]
     };
 
     try {
-        const response = await fetch(DISCORD_WEBHOOK_URL, {
+        await fetch(DISCORD_WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
-
-        if (response.ok) {
-            statusDiv.style.color = "#4ade80";
-            statusDiv.innerText = "Sent successfully!";
-            form.reset();
-            usernameInput.value = username; // Keep name after reset
-        } else {
-            throw new Error();
-        }
+        document.getElementById('status').innerText = "Request Sent! Check Discord.";
     } catch (err) {
-        statusDiv.style.color = "#f87171";
-        statusDiv.innerText = "Error sending request.";
+        document.getElementById('status').innerText = "Failed to send.";
     } finally {
         submitBtn.disabled = false;
-        submitBtn.innerText = "Send Request";
+        submitBtn.innerText = "Submit to Discord";
     }
 });
