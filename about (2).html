@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZorinAI - Revolutionary Homework Help</title>
+    <style>
+        :root {
+            --zorin-blue: #0078ff;
+            --zorin-dark: #0a0e14;
+            --card-bg: #161c24;
+            --input-bg: #1c252e;
+            --text: #ffffff;
+            --text-dim: #a0a6b1;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--zorin-dark);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            background: rgba(10, 14, 20, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--zorin-blue);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        nav a {
+            color: var(--text-dim);
+            text-decoration: none;
+            margin-left: 30px;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--text);
+        }
+
+        .hero {
+            text-align: center;
+            padding: 100px 0 60px;
+        }
+
+        .hero h1 {
+            font-size: 56px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--zorin-blue), #00a8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 22px;
+            color: var(--text-dim);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        /* Story Section */
+        .story-section {
+            padding: 80px 0;
+        }
+
+        .story-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+            margin-bottom: 60px;
+        }
+
+        @media (max-width: 768px) {
+            .story-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .story-content h2 {
+            font-size: 38px;
+            margin-bottom: 25px;
+            color: var(--text);
+        }
+
+        .story-content p {
+            font-size: 18px;
+            color: var(--text-dim);
+            margin-bottom: 20px;
+        }
+
+        .highlight {
+            color: var(--zorin-blue);
+            font-weight: 600;
+        }
+
+        .story-card {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Partnership Section */
+        .partnership {
+            background: var(--card-bg);
+            padding: 60px;
+            border-radius: 20px;
+            text-align: center;
+            margin: 60px 0;
+            border: 2px solid var(--zorin-blue);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .partnership::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 4px;
+            background: linear-gradient(90deg, var(--zorin-blue), #00a8ff);
+        }
+
+        .partners {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            margin: 40px 0;
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .partner-name { color: var(--zorin-blue); }
+
+        /* Stats Section */
+        .stats-section {
+            background: var(--card-bg);
+            padding: 60px 0;
+            margin: 60px 0;
+            border-radius: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--zorin-blue);
+            margin-bottom: 10px;
+        }
+
+        .stat-label { color: var(--text-dim); font-size: 16px; }
+
+        /* Pricing Section */
+        .pricing-section {
+            padding: 100px 0;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .pricing-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 50px;
+            max-width: 500px;
+            margin: 0 auto;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pricing-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 4px;
+            background: linear-gradient(90deg, var(--zorin-blue), #00a8ff);
+        }
+
+        .pricing-card:hover {
+            border-color: var(--zorin-blue);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 120, 255, 0.2);
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--zorin-blue);
+            color: var(--text);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .price {
+            font-size: 64px;
+            font-weight: 700;
+            margin: 20px 0;
+        }
+
+        .price span { font-size: 24px; color: var(--text-dim); }
+
+        .features {
+            list-style: none;
+            margin: 40px 0;
+            text-align: left;
+        }
+
+        .features li {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            color: var(--text-dim);
+        }
+
+        .features li::before {
+            content: '✓';
+            color: var(--zorin-blue);
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        .cta-button {
+            width: 100%;
+            padding: 18px;
+            background: var(--zorin-blue);
+            color: var(--text);
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .cta-button:hover {
+            background: #0066dd;
+            transform: translateY(-2px);
+        }
+
+        /* Values Grid */
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 60px 0;
+        }
+
+        .value-card {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s;
+        }
+
+        .value-card:hover { border-color: var(--zorin-blue); transform: translateY(-5px); }
+
+        footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 60px 0;
+            text-align: center;
+            color: var(--text-dim);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">ZorinAI</div>
+                <div>
+                    <a href="#about">About</a>
+                    <a href="#pricing">Pricing</a>
+                    <a href="#values">Features</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>Revolutionizing Homework Help</h1>
+                <p>Born from a vision to make quality education accessible to every student, everywhere.</p>
+            </div>
+        </section>
+
+        <section id="about" class="story-section">
+            <div class="container">
+                <div class="story-grid">
+                    <div class="story-content">
+                        <h2>Our Story</h2>
+                        <p>ZorinAI emerged from a simple yet powerful observation: students needed better, more accessible homework support. Traditional tutoring was expensive and help wasn't available when students needed it most.</p>
+                        <p>We built ZorinAI to deliver <span class="highlight">instant, reliable homework assistance</span> at a fraction of the cost of traditional tutoring.</p>
+                    </div>
+                    <div class="story-card">
+                        <h3 style="font-size: 24px; margin-bottom: 20px; color: var(--zorin-blue);">What Makes Us Different</h3>
+                        <p style="color: var(--text-dim); font-size: 16px; line-height: 1.8;">
+                            We don't just provide answers. Our AI explains concepts step-by-step, helping students truly understand their work. Available 24/7 across all subjects for just £2 per week.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="partnership">
+                    <h2>A Powerful Partnership</h2>
+                    <div class="partners">
+                        <span class="partner-name">Sparxie</span>
+                        <span style="color: var(--text-dim); font-size: 24px;">+</span>
+                        <span class="partner-name">Sparxo</span>
+                    </div>
+                    <p style="font-size: 16px; color: var(--text-dim); max-width: 700px; margin: 0 auto;">
+                        Together, Sparxie and Sparxo combined their expertise in AI technology and educational psychology to create a platform that transforms how students learn.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="stats-section">
+            <div class="container">
+                <div class="stats-grid">
+                    <div>
+                        <div class="stat-number">10,000+</div>
+                        <div class="stat-label">Active Students</div>
+                    </div>
+                    <div>
+                        <div class="stat-number">98%</div>
+                        <div class="stat-label">Satisfaction Rate</div>
+                    </div>
+                    <div>
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Availability</div>
+                    </div>
+                    <div>
+                        <div class="stat-number">100+</div>
+                        <div class="stat-label">Subjects Covered</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="values" class="container">
+            <h2 style="text-align: center; font-size: 42px; margin-bottom: 10px;">Why Students Choose ZorinAI</h2>
+            <div class="values-grid">
+                <div class="value-card">
+                    <div style="font-size: 48px; margin-bottom: 20px;">⚡</div>
+                    <h3>Instant Support</h3>
+                    <p>No waiting for appointments. Get help the moment you need it, any time of day or night.</p>
+                </div>
+                <div class="value-card">
+                    <div style="font-size: 48px; margin-bottom: 20px;">📚</div>
+                    <h3>Learn, Don't Memorize</h3>
+                    <p>Step-by-step breakdowns that help you understand concepts deeply, not just complete assignments.</p>
+                </div>
+                <div class="value-card">
+                    <div style="font-size: 48px; margin-bottom: 20px;">🔒</div>
+                    <h3>Safe & Secure</h3>
+                    <p>Your privacy matters. All conversations are encrypted and your data is protected.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="pricing" class="pricing-section">
+            <div class="container" style="text-align: center;">
+                <h2 style="font-size: 42px; margin-bottom: 10px;">Simple, Transparent Pricing</h2>
+                <p style="color: var(--text-dim); margin-bottom: 50px;">Unlimited Everything for one low price</p>
+                
+                <div class="pricing-card">
+                    <span class="badge">MOST POPULAR</span>
+                    <h2>Unlimited Plan</h2>
+                    <div class="price">£2<span>/week</span></div>
+                    <div style="color: var(--zorin-blue); font-weight: 600; margin-bottom: 20px;">✨ Unlimited Access</div>
+                    
+                    <ul class="features">
+                        <li>Unlimited homework questions</li>
+                        <li>24/7 AI assistance</li>
+                        <li>Step-by-step explanations</li>
+                        <li>All subjects covered</li>
+                        <li>Save your work history</li>
+                        <li>No hidden fees</li>
+                    </ul>
+
+                    <button class="cta-button">Get Started Now</button>
+                    <p style="margin-top: 20px; font-size: 14px; color: var(--text-dim);">🔒 Cancel anytime • No commitment</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 ZorinAI. All rights reserved.</p>
+            <p style="margin-top: 10px; color: var(--zorin-blue);">Powered by Sparxie & Sparxo</p>
+        </div>
+    </footer>
+</body>
+</html>
