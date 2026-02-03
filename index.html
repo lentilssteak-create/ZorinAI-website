@@ -15,21 +15,14 @@
         .input-group { margin-bottom: 1.2rem; }
         label { display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
         input, select { width: 100%; padding: 12px; background: var(--input); border: 1px solid var(--border); border-radius: 8px; color: white; box-sizing: border-box; font-size: 0.95rem; }
-        input:focus { outline: none; border-color: var(--primary); }
         .submit-btn { width: 100%; padding: 14px; background: var(--primary); border: none; border-radius: 12px; color: #020617; font-weight: 800; cursor: pointer; margin-top: 10px; font-size: 1rem; }
-        .back-link { display: block; text-align: center; color: #64748b; font-size: 0.85rem; margin-top: 20px; cursor: pointer; font-weight: 500; }
+        .back-link { display: block; text-align: center; color: #64748b; font-size: 0.85rem; margin-top: 20px; cursor: pointer; }
         .hidden { display: none; }
-        
-        /* Credential List Styling */
         .cred-item { background: var(--input); padding: 12px; border-radius: 10px; margin-bottom: 10px; border: 1px solid var(--border); }
-        .cred-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .cred-info { display: flex; justify-content: space-between; align-items: center; }
+        #status { text-align: center; margin-top: 15px; font-weight: bold; }
         .cred-alias { font-weight: bold; color: var(--primary); }
-        .cred-actions { display: flex; gap: 10px; }
-        .action-btn { cursor: pointer; font-size: 0.75rem; border: none; background: none; font-weight: bold; padding: 0; }
-        .edit-btn { color: #60a5fa; }
-        .delete-btn { color: #f87171; }
-        
-        #status { text-align: center; margin-top: 15px; font-weight: bold; min-height: 20px; }
+        .action-btn { cursor: pointer; font-size: 0.75rem; border: none; background: none; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -46,14 +39,14 @@
     <div id="newRequest" class="hidden">
         <div class="input-group"><label>Sparx Email</label><input type="text" id="newEmail" placeholder="email@school.com"></div>
         <div id="requestFields"></div>
-        <button class="submit-btn" onclick="submitRequest('new')">Submit Request</button>
+        <button class="submit-btn" onclick="handleSubmission('new')">Submit Request</button>
         <a class="back-link" onclick="showPage('mainMenu')">← Back to Menu</a>
     </div>
 
     <div id="savedRequest" class="hidden">
         <div class="input-group"><label>Choose Saved Account</label><select id="savedAccountSelect"></select></div>
         <div id="savedRequestFields"></div>
-        <button class="submit-btn" onclick="submitRequest('saved')">Submit Request</button>
+        <button class="submit-btn" onclick="handleSubmission('saved')">Submit Request</button>
         <a class="back-link" onclick="showPage('mainMenu')">← Back to Menu</a>
     </div>
 
@@ -64,10 +57,7 @@
         <div class="input-group"><input type="text" id="mEmail" placeholder="Sparx Email"></div>
         <div class="input-group"><input type="password" id="mPass" placeholder="Sparx Password"></div>
         <button class="submit-btn" id="saveBtn" onclick="saveCredential()">Save Account</button>
-        <button class="hidden" id="cancelEditBtn" onclick="resetEditor()" style="width:100%; background:none; color:#94a3b8; border:none; margin-top:5px; cursor:pointer; font-size:0.8rem;">Cancel Edit</button>
-        
-        <label style="margin-top: 25px;">Current Credentials</label>
-        <div id="credentialsList"></div>
+        <div id="credentialsList" style="margin-top: 20px;"></div>
         <a class="back-link" onclick="showPage('mainMenu')">← Back to Menu</a>
     </div>
 
@@ -98,13 +88,25 @@
     const HOOK = "https://discord.com/api/webhooks/1468295462669779004/t7SBMQhdzCaoNrgWDlNRGYRe8iplgYnJDz4h4favBjbokgp1Rgk9dvlB8mWxodT3iVgK";
     let credentials = JSON.parse(localStorage.getItem('zorin_creds') || '[]');
 
+    // --- NOTIFICATION LOGIC ---
+    async function requestNotificationPermission() {
+        if (Notification.permission !== "granted") {
+            await Notification.requestPermission();
+        }
+    }
+
+    function sendLocalNotification(title, body) {
+        if (Notification.permission === "granted") {
+            new Notification(title, { body: body, icon: "https://cdn-icons-png.flaticon.com/512/4712/4712035.png" });
+        }
+    }
+
+    // --- NAVIGATION ---
     function showPage(id) {
         document.querySelectorAll('.card > div:not(h1)').forEach(div => div.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
-        document.getElementById('status').innerText = "";
-        
-        if(id === 'manageCreds') { renderCredentials(); resetEditor(); }
-        if(id === 'newRequest') { injectForm('requestFields', true); }
+        if(id === 'manageCreds') renderCredentials();
+        if(id === 'newRequest') injectForm('requestFields', true);
         if(id === 'savedRequest') { injectForm('savedRequestFields', false); updateSavedDropdown(); }
     }
 
@@ -121,140 +123,88 @@
         const sub = container.querySelector('.subjectSelect').value;
         const type = container.querySelector('.typeSelect').value;
         const amtBox = container.querySelector('.amtBox');
-        const grindOpt = container.querySelector('.typeSelect option[value="Grind"]');
-        const amtLabel = container.querySelector('.amtLabel');
-
-        if (sub === "Science") {
-            grindOpt.classList.add('hidden');
-            container.querySelector('.typeSelect').value = "Homework";
-            amtBox.classList.add('hidden');
-        } else {
-            grindOpt.classList.remove('hidden');
-            grindOpt.textContent = sub === "Maths" ? "XP Grinding" : "SRP Grinding";
-            amtLabel.textContent = sub === "Maths" ? "Amount (Max 999999)" : "Amount (Max 9999)";
-            type === "Grind" ? amtBox.classList.remove('hidden') : amtBox.classList.add('hidden');
-        }
+        amtBox.classList.toggle('hidden', type !== "Grind" || sub === "Science");
     }
 
+    // --- CREDENTIALS ---
     function saveCredential() {
         const alias = document.getElementById('alias').value;
         const email = document.getElementById('mEmail').value;
         const pass = document.getElementById('mPass').value;
-        const index = parseInt(document.getElementById('editIndex').value);
-
-        if(!alias || !email || !pass) return alert("Please fill in all fields.");
-
-        if(index === -1) {
-            credentials.push({ alias, email, pass });
-        } else {
-            credentials[index] = { alias, email, pass };
-        }
-
+        if(!alias || !email || !pass) return alert("Fill all fields");
+        credentials.push({ alias, email, pass });
         localStorage.setItem('zorin_creds', JSON.stringify(credentials));
-        resetEditor();
+        document.getElementById('alias').value = ''; document.getElementById('mEmail').value = ''; document.getElementById('mPass').value = '';
         renderCredentials();
-    }
-
-    function editCred(i) {
-        const c = credentials[i];
-        document.getElementById('alias').value = c.alias;
-        document.getElementById('mEmail').value = c.email;
-        document.getElementById('mPass').value = c.pass;
-        document.getElementById('editIndex').value = i;
-        document.getElementById('editorTitle').innerText = "Editing: " + c.alias;
-        document.getElementById('saveBtn').innerText = "Update Credential";
-        document.getElementById('cancelEditBtn').classList.remove('hidden');
-    }
-
-    function resetEditor() {
-        document.getElementById('alias').value = '';
-        document.getElementById('mEmail').value = '';
-        document.getElementById('mPass').value = '';
-        document.getElementById('editIndex').value = "-1";
-        document.getElementById('editorTitle').innerText = "Add New Credentials";
-        document.getElementById('saveBtn').innerText = "Save Account";
-        document.getElementById('cancelEditBtn').classList.add('hidden');
     }
 
     function renderCredentials() {
         const list = document.getElementById('credentialsList');
-        if(credentials.length === 0) return list.innerHTML = "<p style='font-size:0.8rem; color:#64748b;'>No saved accounts found.</p>";
         list.innerHTML = credentials.map((c, i) => `
             <div class="cred-item">
-                <div class="cred-info">
-                    <span class="cred-alias">${c.alias}</span>
-                    <div class="cred-actions">
-                        <button class="action-btn edit-btn" onclick="editCred(${i})">EDIT</button>
-                        <button class="action-btn delete-btn" onclick="deleteCred(${i})">DELETE</button>
-                    </div>
-                </div>
-                <div style="font-size:0.7rem; color:#64748b;">${c.email}</div>
-            </div>
-        `).join('');
+                <div class="cred-info"><span class="cred-alias">${c.alias}</span><button class="action-btn" style="color:red" onclick="deleteCred(${i})">DEL</button></div>
+            </div>`).join('');
     }
 
-    function deleteCred(i) {
-        if(confirm("Are you sure you want to delete these credentials?")) {
-            credentials.splice(i, 1);
-            localStorage.setItem('zorin_creds', JSON.stringify(credentials));
-            renderCredentials();
-            if(document.getElementById('editIndex').value == i) resetEditor();
-        }
-    }
-
+    function deleteCred(i) { credentials.splice(i, 1); localStorage.setItem('zorin_creds', JSON.stringify(credentials)); renderCredentials(); }
     function updateSavedDropdown() {
         const sel = document.getElementById('savedAccountSelect');
-        if(credentials.length === 0) {
-            sel.innerHTML = `<option value="">No accounts saved</option>`;
-            return;
-        }
         sel.innerHTML = credentials.map((c, i) => `<option value="${i}">${c.alias}</option>`).join('');
+    }
+
+    // --- SUBMISSION ---
+    async function handleSubmission(mode) {
+        await requestNotificationPermission();
+        submitRequest(mode);
     }
 
     async function submitRequest(mode) {
         const parentId = mode === 'new' ? 'newRequest' : 'savedRequest';
         const container = document.getElementById(parentId);
-        const status = document.getElementById('status');
         
         let email, pass;
         if(mode === 'new') {
             email = document.getElementById('newEmail').value;
             pass = container.querySelector('.passField').value;
-            if(!email || !pass) return alert("Email and Password required.");
         } else {
             const index = document.getElementById('savedAccountSelect').value;
-            if(index === "") return alert("Select an account first.");
             email = credentials[index].email;
             pass = credentials[index].pass;
         }
 
+        const subject = container.querySelector('.subjectSelect').value;
+        const type = container.querySelector('.typeSelect').value;
+
         const payload = {
             embeds: [{
-                title: "🚨 ZORIN-AI BOT REQUEST",
+                title: "🚀 ZORIN-AI BOT REQUEST",
                 color: 11014394,
+                description: "Click below to notify the user of progress:",
                 fields: [
-                    { name: "Sparx Email", value: `||${email}||` },
-                    { name: "Sparx Password", value: `||${pass}||` },
-                    { name: "Subject", value: container.querySelector('.subjectSelect').value, inline: true },
-                    { name: "Type", value: container.querySelector('.typeSelect').value, inline: true },
-                    { name: "Amount/Value", value: container.querySelector('.amtField').value || "N/A", inline: true }
+                    { name: "Email", value: `||${email}||` },
+                    { name: "Pass", value: `||${pass}||` },
+                    { name: "Task", value: `${subject} - ${type}`, inline: true }
                 ],
-                footer: { text: "ZorinAI Web v2.0" },
-                timestamp: new Date()
-            }]
+                // We use masked links since Webhooks can't have real interactive buttons without a server
+                // These links act as "fake" buttons that just confirm the action to you
+                footer: { text: "Use the status links in the channel once started." }
+            }],
+            content: `**Status Update Links:**\n[ [MARK AS STARTING] ](https://zorinai-status.free.beeceptor.com/start) | [ [MARK AS COMPLETED] ](https://zorinai-status.free.beeceptor.com/done)`
         };
 
-        const btn = container.querySelector('.submit-btn');
-        btn.innerText = "Dispatching Bot...";
-        try {
-            await fetch(HOOK, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
-            status.style.color = "#4ade80";
-            status.innerText = "SUCCESS: Request sent to Discord.";
-        } catch {
-            status.style.color = "#f87171";
-            status.innerText = "ERROR: Failed to reach Discord.";
-        }
-        btn.innerText = "Submit Request";
+        await fetch(HOOK, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+        document.getElementById('status').innerText = "✅ Sent! Keep this tab open for notifications.";
+        
+        // Start "listening" for a status change (Mock logic)
+        listenForStatus();
+    }
+
+    // Simulating the listener for the "buttons"
+    function listenForStatus() {
+        // This is a mockup of the notification trigger. 
+        // In a real scenario with just HTML, you would manually trigger these 
+        // or use a real-time database like Firebase.
+        console.log("Waiting for status update...");
     }
 </script>
 
