@@ -3,58 +3,268 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZorinAI</title>
-    <link rel="stylesheet" href="style.css">
+    <title>ZorinAI | Portal</title>
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --bg: #020617;
+            --card-bg: #1e293b;
+            --input-bg: #0f172a;
+            --text: #f8fafc;
+            --border: #334155;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container { width: 100%; max-width: 400px; padding: 20px; }
+
+        .card {
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border);
+        }
+
+        h1 { margin: 0 0 0.5rem 0; font-size: 2rem; font-weight: 800; letter-spacing: -1px; }
+        h1 span { color: var(--primary); }
+        p { color: #94a3b8; margin-bottom: 2rem; font-size: 0.9rem; }
+
+        .input-group { margin-bottom: 1.5rem; }
+        label { display: block; margin-bottom: 0.5rem; font-size: 0.85rem; font-weight: 600; color: #cbd5e1; }
+
+        input, select {
+            width: 100%;
+            padding: 14px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .checkbox-group input { width: auto; cursor: pointer; }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.1s, background 0.2s;
+        }
+
+        button:hover { background: #7c3aed; }
+        button:active { transform: scale(0.98); }
+
+        .back-btn {
+            background: none;
+            color: #94a3b8;
+            padding: 0;
+            margin-bottom: 1rem;
+            width: auto;
+            font-weight: 500;
+            font-size: 0.85rem;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .hidden { display: none; }
+        #status { margin-top: 1rem; text-align: center; font-size: 0.85rem; font-weight: 600; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <div class="card" id="setup-step">
-            <h1>Zorin<span>AI</span></h1>
-            <p>Enter your details to begin.</p>
-            <div class="input-group">
-                <label>Student Name</label>
-                <input type="text" id="username" placeholder="Enter name...">
-            </div>
-            <div class="checkbox-group">
-                <input type="checkbox" id="rememberMe"> 
-                <label for="rememberMe">Remember me on this device</label>
-            </div>
-            <button onclick="nextStep()">Continue</button>
+
+<div class="container">
+    <div id="step1" class="card">
+        <h1>Zorin<span>AI</span></h1>
+        <p>Enter your details to access the portal.</p>
+        
+        <div class="input-group">
+            <label>Student Name</label>
+            <input type="text" id="username" placeholder="e.g. Alex Smith">
         </div>
 
-        <div class="card hidden" id="request-step">
-            <button class="back-btn" onclick="prevStep()">← Back</button>
-            <h1>Zorin<span>AI</span></h1>
-            
-            <form id="zorinForm">
-                <div class="input-group">
-                    <label>Subject</label>
-                    <select id="subject" onchange="toggleSubOptions()" required>
-                        <option value="" disabled selected>Select Subject</option>
-                        <option value="Maths">Maths</option>
-                        <option value="Science">Science</option>
-                        <option value="Reader">Reader</option>
-                    </select>
-                </div>
+        <label class="checkbox-group">
+            <input type="checkbox" id="rememberMe" checked>
+            Remember me on this device
+        </label>
 
-                <div id="subOptions" class="input-group hidden">
-                    <label id="subLabel">Service Type</label>
-                    <select id="serviceType" onchange="toggleAmountInput()">
-                        <option value="Homework">Homework</option>
-                        <option id="grindOption" value="Grind">Grinding</option>
-                    </select>
-                </div>
-
-                <div id="amountGroup" class="input-group hidden">
-                    <label id="amountLabel">Amount</label>
-                    <input type="number" id="amount" min="1" placeholder="Max 999999">
-                </div>
-
-                <button type="submit" id="submitBtn">Submit Request</button>
-            </form>
-            <div id="status"></div>
-        </div>
+        <button onclick="goToStep2()">Continue</button>
     </div>
-    <script src="script.js"></script>
+
+    <div id="step2" class="card hidden">
+        <button class="back-btn" onclick="goToStep1()">← Back</button>
+        <h1>Zorin<span>AI</span></h1>
+        <p>Configure your automated request.</p>
+
+        <form id="requestForm">
+            <div class="input-group">
+                <label>Subject</label>
+                <select id="subject" onchange="updateUI()" required>
+                    <option value="" disabled selected>Select Subject</option>
+                    <option value="Maths">Maths</option>
+                    <option value="Science">Science</option>
+                    <option value="Reader">Reader</option>
+                </select>
+            </div>
+
+            <div id="typeBox" class="input-group hidden">
+                <label id="typeLabel">Service Type</label>
+                <select id="serviceType" onchange="updateUI()">
+                    <option value="Homework">Homework</option>
+                    <option value="Grind">Grinding</option>
+                </select>
+            </div>
+
+            <div id="amountBox" class="input-group hidden">
+                <label id="amountLabel">Target Amount</label>
+                <input type="number" id="amount" placeholder="Enter number">
+            </div>
+
+            <button type="submit" id="submitBtn">Send Request</button>
+        </form>
+        <div id="status"></div>
+    </div>
+</div>
+
+<script>
+    const WEBHOOK_URL = "YOUR_DISCORD_WEBHOOK_URL_HERE";
+
+    // LOAD SAVED CREDENTIALS
+    window.onload = () => {
+        const saved = localStorage.getItem('zorin_saved_name');
+        if (saved) {
+            document.getElementById('username').value = saved;
+        }
+    };
+
+    function goToStep2() {
+        const name = document.getElementById('username').value;
+        if (!name) return alert("Please enter your name.");
+        
+        // SAVE CREDENTIALS
+        if (document.getElementById('rememberMe').checked) {
+            localStorage.setItem('zorin_saved_name', name);
+        } else {
+            localStorage.removeItem('zorin_saved_name');
+        }
+
+        document.getElementById('step1').classList.add('hidden');
+        document.getElementById('step2').classList.remove('hidden');
+    }
+
+    function goToStep1() {
+        document.getElementById('step2').classList.add('hidden');
+        document.getElementById('step1').classList.remove('hidden');
+    }
+
+    function updateUI() {
+        const sub = document.getElementById('subject').value;
+        const type = document.getElementById('serviceType').value;
+        const typeBox = document.getElementById('typeBox');
+        const amountBox = document.getElementById('amountBox');
+        const amountInput = document.getElementById('amount');
+        const grindOption = document.querySelector("#serviceType option[value='Grind']");
+
+        typeBox.classList.remove('hidden');
+
+        if (sub === "Science") {
+            grindOption.classList.add('hidden');
+            document.getElementById('serviceType').value = "Homework";
+            amountBox.classList.add('hidden');
+        } else {
+            grindOption.classList.remove('hidden');
+            const label = (sub === "Maths") ? "XP Grinding" : "SRP Grinding";
+            grindOption.textContent = label;
+            
+            if (type === "Grind") {
+                amountBox.classList.remove('hidden');
+                const max = (sub === "Maths") ? 999999 : 9999;
+                amountInput.max = max;
+                amountInput.placeholder = `Max ${max}`;
+            } else {
+                amountBox.classList.add('hidden');
+            }
+        }
+    }
+
+    document.getElementById('requestForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        const status = document.getElementById('status');
+        
+        btn.disabled = true;
+        btn.textContent = "Sending...";
+
+        const payload = {
+            embeds: [{
+                title: "📬 New ZorinAI Request",
+                color: 9133046,
+                fields: [
+                    { name: "Student", value: document.getElementById('username').value, inline: true },
+                    { name: "Subject", value: document.getElementById('subject').value, inline: true },
+                    { name: "Service", value: document.getElementById('serviceType').value, inline: true },
+                    { name: "Amount", value: document.getElementById('amount').value || "N/A" }
+                ],
+                footer: { text: "Sent via ZorinAI Web" },
+                timestamp: new Date()
+            }]
+        };
+
+        try {
+            const res = await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                status.style.color = "#4ade80";
+                status.textContent = "Successfully submitted!";
+                setTimeout(() => { status.textContent = ""; }, 3000);
+            }
+        } catch (err) {
+            status.style.color = "#f87171";
+            status.textContent = "Error sending request.";
+        } finally {
+            btn.disabled = false;
+            btn.textContent = "Send Request";
+        }
+    });
+</script>
+
 </body>
 </html>
