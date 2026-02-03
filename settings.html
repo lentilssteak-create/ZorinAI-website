@@ -8,61 +8,122 @@
     <script src="https://www.gstatic.com/firebasejs/9.1.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.1/firebase-firestore-compat.js"></script>
     <style>
-        :root { --zorin-blue: #0078ff; --zorin-dark: #0a0e14; --card-bg: #161c24; --input-bg: #1c252e; --text: #ffffff; --danger: #ef4444; }
+        :root { 
+            --zorin-blue: #0078ff; --zorin-dark: #0a0e14; --card-bg: #161c24; 
+            --input-bg: #1c252e; --text: #ffffff; --text-dim: #a0a6b1; --danger: #ef4444; 
+        }
+        * { box-sizing: border-box; }
         body { margin: 0; background-color: var(--zorin-dark); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .app-card { background: var(--card-bg); width: 100%; max-width: 440px; padding: 35px; border-radius: 20px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
-        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: var(--input-bg); color: white; margin-bottom: 10px; }
-        .btn { width: 100%; padding: 12px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
+        .app-card { background: var(--card-bg); width: 100%; max-width: 440px; padding: 35px; border-radius: 20px; text-align: center; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { margin-top: 0; color: var(--zorin-blue); }
+        h4 { text-align: left; margin: 20px 0 8px 0; font-size: 11px; letter-spacing: 1px; color: var(--text-dim); text-transform: uppercase; }
+        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: var(--input-bg); color: white; margin-bottom: 10px; outline: none; }
+        input:focus { border-color: var(--zorin-blue); }
+        .btn { width: 100%; padding: 13px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; margin-bottom: 10px; transition: 0.2s; }
+        .btn:hover { opacity: 0.8; }
         .blue { background: var(--zorin-blue); color: white; }
         .red { background: var(--danger); color: white; }
-        h4 { text-align: left; margin: 15px 0 5px 0; font-size: 12px; color: #a0a6b1; }
+        .back-link { display: inline-block; margin-top: 15px; color: var(--text-dim); text-decoration: none; font-size: 13px; }
+        .back-link:hover { color: white; }
+        hr { border: 0; border-top: 1px solid rgba(255,255,255,0.05); margin: 20px 0; }
     </style>
 </head>
 <body>
     <div class="app-card">
-        <h2>Settings</h2>
+        <h2>Account Settings</h2>
         
-        <h4>UPDATE SPARX CREDENTIALS</h4>
-        <input type="email" id="new-sparx-email" placeholder="New Sparx Email">
-        <input type="password" id="new-sparx-pass" placeholder="New Sparx Password">
-        <button class="btn blue" onclick="updateSparx()">Update Sparx Account</button>
+        <h4>Update Sparx Details</h4>
+        <input type="email" id="new-sparx-email" placeholder="New School Email">
+        <input type="password" id="new-sparx-pass" placeholder="New School Password">
+        <button class="btn blue" onclick="updateSparx()">Save Sparx Changes</button>
 
-        <hr style="opacity:0.1; margin: 20px 0;">
+        <hr>
 
-        <h4>DASHBOARD SECURITY</h4>
+        <h4>Dashboard Security</h4>
         <input type="password" id="new-dash-pass" placeholder="New Dashboard Password">
-        <button class="btn blue" onclick="updatePass()">Change Password</button>
-        <button class="btn red" onclick="deleteAccount()">Delete Account Forever</button>
+        <button class="btn blue" onclick="updatePass()">Change Dashboard Password</button>
+        
+        <p style="font-size: 10px; color: var(--text-dim); margin-bottom: 20px;">
+            Note: For security, you may be asked to log in again before changing passwords or deleting your account.
+        </p>
+        
+        <button class="btn red" onclick="deleteAccount()">Delete Account Permanently</button>
 
-        <a href="index.html" style="color:#a0a6b1; font-size: 13px;">← Back to Dashboard</a>
+        <a href="index.html" class="back-link">← Return to Dashboard</a>
     </div>
 
 <script>
-const firebaseConfig = { /* PASTE YOUR CONFIG HERE */ };
+// YOUR FIREBASE CONFIG
+const firebaseConfig = {
+  apiKey: "AIzaSyABBpThk_bHj5Ze06MgmKqgkUAY2__V-bU",
+  authDomain: "zorinai-464ac.firebaseapp.com",
+  projectId: "zorinai-464ac",
+  storageBucket: "zorinai-464ac.firebasestorage.app",
+  messagingSenderId: "515956560943",
+  appId: "1:515956560943:web:853a505af5c4c27272e2da"
+};
+
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+// 1. UPDATE SPARX CREDENTIALS
 async function updateSparx() {
-    const e = document.getElementById('new-sparx-email').value;
-    const p = document.getElementById('new-sparx-pass').value;
-    if(!e || !p) return alert("Fill fields");
-    await db.collection('users').doc(auth.currentUser.uid).update({ sparxEmail: e, sparxPass: p });
-    alert("Sparx Credentials Updated!");
+    const user = auth.currentUser;
+    if (!user) return alert("You must be logged in.");
+
+    const se = document.getElementById('new-sparx-email').value;
+    const sp = document.getElementById('new-sparx-pass').value;
+    
+    if(!se || !sp) return alert("Please fill in both fields.");
+
+    try {
+        await db.collection('users').doc(user.uid).update({
+            sparxEmail: se,
+            sparxPass: sp
+        });
+        alert("Sparx credentials updated successfully!");
+    } catch (err) {
+        alert("Error: " + err.message);
+    }
 }
 
+// 2. CHANGE DASHBOARD PASSWORD
 async function updatePass() {
-    const p = document.getElementById('new-dash-pass').value;
-    if(p.length < 6) return alert("Password too short");
-    await auth.currentUser.updatePassword(p);
-    alert("Dashboard Password Changed!");
+    const user = auth.currentUser;
+    const newPass = document.getElementById('new-dash-pass').value;
+
+    if (newPass.length < 6) return alert("Password must be at least 6 characters.");
+
+    try {
+        await user.updatePassword(newPass);
+        alert("Password updated! Please use your new password next time you log in.");
+    } catch (err) {
+        alert("Security: Please log out and log back in before changing your password.");
+    }
 }
 
+// 3. DELETE ACCOUNT
 async function deleteAccount() {
-    if(confirm("Are you sure? This will delete your profile and access permanently.")) {
-        await db.collection('users').doc(auth.currentUser.uid).delete();
-        await auth.currentUser.delete();
-        window.location.href = "index.html";
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const confirmFirst = confirm("WARNING: This will delete your profile, saved credentials, and any remaining access time. This cannot be undone.");
+    
+    if (confirmFirst) {
+        const confirmSecond = confirm("Are you absolutely 100% sure?");
+        if (confirmSecond) {
+            try {
+                // Delete from Firestore first
+                await db.collection('users').doc(user.uid).delete();
+                // Delete from Auth
+                await user.delete();
+                alert("Account deleted.");
+                window.location.href = "index.html";
+            } catch (err) {
+                alert("Security: Please log out and log back in before deleting your account.");
+            }
+        }
     }
 }
 </script>
