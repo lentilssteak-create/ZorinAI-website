@@ -50,14 +50,22 @@ auth.onAuthStateChanged(user => {
 });
 
 function listenForUser(uid) {
-    // Adding specific error handling to see WHY it's stuck
+    console.log("Attempting to listen for UID:", uid);
+    
+    // We use a simpler query first to ensure connection, then apply ordering
     db.collection('notifications')
       .where('userId', '==', uid)
       .orderBy('timestamp', 'desc')
-      .onSnapshot((snap) => {
+      .onSnapshot({ includeMetadataChanges: true }, (snap) => {
         const list = document.getElementById('user-list');
+        
+        if (snap.metadata.fromCache && snap.empty) {
+            console.log("Waiting for server data...");
+            return; 
+        }
+
         if (snap.empty) {
-            list.innerHTML = "<p style='color:var(--text-dim)'>No active requests found.</p>";
+            list.innerHTML = "<p style='color:var(--text-dim)'>No active requests.</p>";
             return;
         }
         
@@ -65,6 +73,8 @@ function listenForUser(uid) {
         snap.forEach(doc => {
             const d = doc.data();
             let color = "var(--text-dim)";
+            let statusLabel = d.status || 'pending';
+
             if(d.status === 'starting') color = "var(--warning)";
             if(d.status === 'finished') color = "var(--success)";
 
@@ -72,15 +82,21 @@ function listenForUser(uid) {
                 <div class="notif-item">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <b style="color:var(--zorin-blue)">${d.subject}</b>
-                        <span class="status-pill" style="background:${color}22; color:${color}">${d.status || 'pending'}</span>
+                        <span class="status-pill" style="background:${color}22; color:${color}">${statusLabel.toUpperCase()}</span>
                     </div>
-                    <p style="font-size:13px; color:var(--text-dim); margin-top:5px;">${d.task} ${d.amount !== 'N/A' ? `(${d.amount})` : ''}</p>
-                    ${d.extraInfo ? `<div style="margin-top:10px; font-size:12px; border-left:2px solid var(--success); padding-left:8px;">${d.extraInfo}</div>` : ''}
+                    <p style="font-size:13px; color:var(--text-dim); margin-top:5px;">${d.task}</p>
+                    ${d.extraInfo ? `<div style="margin-top:10px; font-size:12px; border-left:2px solid var(--success); padding-left:8px; color:white;">Note: ${d.extraInfo}</div>` : ''}
                 </div>`;
         });
     }, (error) => {
-        console.error("LIFELINE ERROR:", error);
-        document.getElementById('user-list').innerHTML = `<p style="color:var(--danger)">Connection Error: ${error.message}</p>`;
+        console.error("FULL ERROR OBJECT:", error);
+        document.getElementById('user-list').innerHTML = `
+            <div style="color:var(--danger); font-size:12px; text-align:left;">
+                <b>Index Error:</b><br>
+                1. Click the link in your console.<br>
+                2. If index exists, wait 5 mins for it to propagate.<br>
+                3. Ensure field name is 'userId' (lowercase 'u').
+            </div>`;
     });
 }
 
