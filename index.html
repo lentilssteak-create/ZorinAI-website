@@ -116,15 +116,24 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth(); const db = firebase.firestore();
 let profile = null;
 
+/* REPLACE ONLY THE showView FUNCTION IN YOUR index.html SCRIPT */
+
 function showView(id) {
+    // 1. Reset the Request Form if opening it
     if(id === 'request-view') {
-        document.getElementById('sub-select').value = "";
-        document.getElementById('task-select').innerHTML = '<option value="" disabled selected>Select Task...</option>';
+        const subSelect = document.getElementById('sub-select');
+        const taskSelect = document.getElementById('task-select');
+        
+        subSelect.selectedIndex = 0; // Forces "Choose a Subject..."
+        taskSelect.innerHTML = '<option value="" disabled selected>Select Task...</option>';
         document.getElementById('task-amount').value = "";
         document.getElementById('amount-container').classList.add('hidden');
     }
+
+    // 2. Standard View Switching
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
+    const target = document.getElementById(id);
+    if(target) target.classList.add('active');
 }
 
 async function signIn() { auth.signInWithEmailAndPassword(document.getElementById('login-email').value, document.getElementById('login-pass').value).catch(err => alert(err.message)); }
