@@ -10,53 +10,90 @@
     <style>
         :root { --zorin-blue: #0078ff; --zorin-dark: #05070a; --card-bg: rgba(22, 28, 36, 0.7); --text: #ffffff; --text-dim: #a0a6b1; --danger: #ff4757; --warning: #f59e0b; --success: #2ed573; }
         body { margin: 0; background: var(--zorin-dark); color: var(--text); font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
-        body::before { content: ""; position: absolute; width: 200%; height: 200%; background: radial-gradient(circle at 30% 30%, rgba(0, 120, 255, 0.1) 0%, transparent 40%); animation: liquidMove 15s infinite; z-index: -1; }
-        @keyframes liquidMove { 0% { transform: translate(-5%, -5%); } 100% { transform: translate(5%, 5%); } }
-        .app-card { background: var(--card-bg); width: 100%; max-width: 480px; padding: 35px; border-radius: 28px; backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); text-align: center; }
-        .notif-item { text-align: left; padding: 16px; border-radius: 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); margin-bottom: 15px; }
-        .btn { padding: 10px; border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: bold; transition: 0.2s; }
+        .app-card { background: var(--card-bg); width: 100%; max-width: 480px; padding: 35px; border-radius: 28px; backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); text-align: center; max-height: 90vh; overflow-y: auto; }
+        .notif-item { text-align: left; padding: 16px; border-radius: 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); margin-bottom: 15px; transition: 0.3s; }
+        .status-pill { font-size: 10px; font-weight: bold; padding: 4px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        .btn { padding: 10px 15px; border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: bold; }
         .back-link { display: inline-block; margin-top: 20px; color: var(--text-dim); text-decoration: none; }
         .hidden { display: none !important; }
+        h2 span { color: var(--zorin-blue); }
     </style>
 </head>
 <body>
 <div class="app-card">
     <h2>Zorin<span>AI</span> Updates</h2>
-    <div id="user-view" class="hidden"><div id="user-list"></div></div>
-    <div id="admin-view" class="hidden"><div id="admin-list"></div></div>
-    <a href="index.html" class="back-link">← Back</a>
+    <div id="user-view" class="hidden"><div id="user-list">Connecting to live feed...</div></div>
+    <div id="admin-view" class="hidden"><div id="admin-list">Loading queue...</div></div>
+    <a href="index.html" class="back-link">← Back to Dashboard</a>
 </div>
+
 <script>
 const firebaseConfig = { apiKey: "AIzaSyABBpThk_bHj5Ze06MgmKqgkUAY2__V-bU", authDomain: "zorinai-464ac.firebaseapp.com", projectId: "zorinai-464ac", storageBucket: "zorinai-464ac.firebasestorage.app", messagingSenderId: "515956560943", appId: "1:515956560943:web:853a505af5c4c27272e2da" };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth(); const db = firebase.firestore();
 
 auth.onAuthStateChanged(user => {
-    if (!user) return;
-    if (user.email === 'admin@zorin.ai') { document.getElementById('admin-view').classList.remove('hidden'); listenForAdmin(); }
-    else { document.getElementById('user-view').classList.remove('hidden'); listenForUser(user.uid); }
+    if (!user) { window.location.href = "index.html"; return; }
+    if (user.email === 'admin@zorin.ai') {
+        document.getElementById('admin-view').classList.remove('hidden');
+        listenForAdmin();
+    } else {
+        document.getElementById('user-view').classList.remove('hidden');
+        listenForUser(user.uid);
+    }
 });
 
+// USER LISTENER: Detects when Admin clicks "Start" or "Finish"
 function listenForUser(uid) {
-    db.collection('notifications').where('userId', '==', uid).orderBy('timestamp', 'desc').limit(10).onSnapshot(snap => {
-        const list = document.getElementById('user-list'); list.innerHTML = snap.empty ? "No activity." : "";
+    db.collection('notifications')
+      .where('userId', '==', uid)
+      .orderBy('timestamp', 'desc')
+      .onSnapshot({ includeMetadataChanges: true }, (snap) => {
+        const list = document.getElementById('user-list');
+        if (snap.empty) { list.innerHTML = "<p style='color:var(--text-dim)'>No active requests.</p>"; return; }
+        
+        list.innerHTML = "";
         snap.forEach(doc => {
-            const d = doc.data(); const color = d.status === 'finished' ? 'var(--success)' : (d.status === 'starting' ? 'var(--warning)' : 'var(--text-dim)');
-            list.innerHTML += `<div class="notif-item"><b style="color:var(--zorin-blue)">${d.subject}</b>: ${d.task}<br><span style="color:${color}; font-size:11px;">● ${d.status.toUpperCase()}</span></div>`;
+            const d = doc.data();
+            let statusColor = "var(--text-dim)";
+            let statusText = d.status || "Pending";
+
+            if(d.status === 'starting') { statusColor = "var(--warning)"; statusText = "🚀 Starting Now"; }
+            if(d.status === 'finished') { statusColor = "var(--success)"; statusText = "✅ Finished"; }
+
+            list.innerHTML += `
+                <div class="notif-item">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <b style="color:var(--zorin-blue)">${d.subject}</b>
+                        <span class="status-pill" style="background:${statusColor}22; color:${statusColor}">${statusText}</span>
+                    </div>
+                    <div style="font-size:13px; color:var(--text-dim)">${d.task} ${d.amount !== 'N/A' ? `(${d.amount})` : ''}</div>
+                    ${d.extraInfo ? `<div style="margin-top:10px; padding:8px; background:rgba(255,255,255,0.05); border-radius:8px; font-size:12px; border-left:3px solid var(--success)">${d.extraInfo}</div>` : ''}
+                </div>`;
         });
-    });
+    }, (err) => { console.error("Listener error:", err); });
 }
 
+// ADMIN LISTENER: Shows requests that need work
 function listenForAdmin() {
-    db.collection('notifications').where('status', 'in', ['pending', 'starting']).orderBy('timestamp', 'desc').onSnapshot(snap => {
-        const list = document.getElementById('admin-list'); list.innerHTML = snap.empty ? "Queue empty." : "";
+    db.collection('notifications')
+      .where('status', 'in', ['pending', 'starting'])
+      .orderBy('timestamp', 'desc')
+      .onSnapshot((snap) => {
+        const list = document.getElementById('admin-list');
+        list.innerHTML = snap.empty ? "<p>No pending tasks.</p>" : "";
         snap.forEach(doc => {
             const d = doc.data();
             list.innerHTML += `
                 <div class="notif-item" id="item-${doc.id}">
-                    <b>${d.userEmail}</b>: ${d.subject} (${d.amount})
-                    <div id="ctrl-${doc.id}" style="display:flex; gap:10px; margin-top:10px">
-                        ${d.status === 'pending' ? `<button class="btn" style="background:var(--warning)" onclick="adminAction('${doc.id}', 'starting')">Start Now</button>` : `<span style="color:var(--warning)">Working...</span>`}
+                    <div style="margin-bottom:10px;">
+                        <b style="color:var(--zorin-blue)">${d.userEmail}</b><br>
+                        <span style="font-size:12px;">${d.subject} > ${d.task} (${d.amount})</span>
+                    </div>
+                    <div id="ctrl-${doc.id}" style="display:flex; gap:10px;">
+                        ${d.status === 'pending' ? 
+                            `<button class="btn" style="background:var(--warning)" onclick="adminAction('${doc.id}', 'starting')">Start Now</button>` 
+                            : `<span style="color:var(--warning); font-size:12px; font-weight:bold;">WORK IN PROGRESS</span>`}
                         <button class="btn" style="background:var(--success)" onclick="adminAction('${doc.id}', 'finished')">Finish</button>
                     </div>
                 </div>`;
@@ -64,12 +101,32 @@ function listenForAdmin() {
     });
 }
 
-async function adminAction(id, s) {
+async function adminAction(id, newStatus) {
+    // Immediate UI Feedback: Hide buttons so admin doesn't double-click
     const ctrl = document.getElementById(`ctrl-${id}`);
-    if(s === 'starting') ctrl.innerHTML = `<span style="color:var(--warning)">Updating...</span>`;
-    let note = ""; if(s === 'finished') note = prompt("Note for user:") || "";
-    await db.collection('notifications').doc(id).update({ status: s, extraInfo: note });
-    if(s === 'finished') document.getElementById(`item-${id}`).style.display = 'none';
+    if (ctrl) ctrl.innerHTML = `<span style="color:var(--zorin-blue)">Updating status...</span>`;
+
+    try {
+        let note = "";
+        if (newStatus === 'finished') {
+            note = prompt("Add a closing note (e.g. 'XP added')") || "";
+        }
+
+        await db.collection('notifications').doc(id).update({
+            status: newStatus,
+            extraInfo: note,
+            lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        if (newStatus === 'finished') {
+            const el = document.getElementById(`item-${id}`);
+            if (el) el.style.opacity = '0';
+            setTimeout(() => { if (el) el.style.display = 'none'; }, 300);
+        }
+    } catch (e) {
+        alert("Error: " + e.message);
+        location.reload(); // Refresh if update fails
+    }
 }
 </script>
 </body>
