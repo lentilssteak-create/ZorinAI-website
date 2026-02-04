@@ -9,98 +9,70 @@
     <script src="https://www.gstatic.com/firebasejs/9.1.1/firebase-firestore-compat.js"></script>
     <style>
         :root {
-            --zorin-blue: #0078ff; 
-            --zorin-dark: #05070a; 
-            --card-bg: rgba(22, 28, 36, 0.7);
-            --input-bg: rgba(28, 37, 46, 0.8); 
-            --text: #ffffff; 
-            --text-dim: #a0a6b1;
-            --danger: #ff4757; 
-            --success: #2ed573;
+            --zorin-blue: #0078ff; --zorin-dark: #05070a; 
+            --card-bg: rgba(22, 28, 36, 0.7); --input-bg: rgba(28, 37, 46, 0.8); 
+            --text: #ffffff; --text-dim: #a0a6b1; --danger: #ff4757; --success: #2ed573;
         }
-
         * { font-family: 'Inter', sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
-
-        body { 
-            background: var(--zorin-dark);
-            height: 100vh; display: flex; justify-content: center; align-items: center;
-            overflow: hidden; color: var(--text);
-        }
-
+        body { background: var(--zorin-dark); height: 100vh; display: flex; justify-content: center; align-items: center; overflow: hidden; color: var(--text); }
         body::before {
             content: ""; position: absolute; width: 200%; height: 200%;
             background: radial-gradient(circle at 30% 30%, rgba(0, 120, 255, 0.1) 0%, transparent 40%),
                         radial-gradient(circle at 70% 70%, rgba(0, 255, 170, 0.05) 0%, transparent 40%);
             animation: liquidMove 15s ease-in-out infinite alternate; z-index: -1;
         }
-
         @keyframes liquidMove { 0% { transform: translate(-10%, -10%); } 100% { transform: translate(10%, 10%); } }
-
         .app-card { 
             background: var(--card-bg); width: 100%; max-width: 420px; padding: 40px; 
             border-radius: 28px; backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5); text-align: center;
         }
-
         h1 { font-size: 2.5rem; letter-spacing: -1px; margin-bottom: 30px; }
         h1 span { background: linear-gradient(90deg, #0078ff, #00c6ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
         .view { display: none; flex-direction: column; gap: 15px; }
         .view.active { display: flex; animation: slideUp 0.4s ease-out; }
-
         @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
         input, select { 
             width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); 
             background: var(--input-bg); color: white; outline: none; transition: 0.3s;
         }
-
         .submit-btn { 
             background: linear-gradient(135deg, #0078ff 0%, #0056b3 100%); color: white; 
-            border: none; padding: 16px; border-radius: 14px; font-weight: 700; 
-            cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: none; padding: 16px; border-radius: 14px; font-weight: 700; cursor: pointer; 
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         .submit-btn:hover { transform: scale(1.02); filter: brightness(1.1); }
-
         .secondary-btn { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1); color: white; }
-
         .user-row { 
             display: flex; justify-content: space-between; align-items: center; 
-            padding: 12px 16px; background: rgba(255,255,255,0.05); 
-            margin-bottom: 8px; border-radius: 12px; font-size: 13px; color: white;
+            padding: 12px 16px; background: rgba(255,255,255,0.05); margin-bottom: 8px; 
+            border-radius: 12px; font-size: 13px; color: white;
         }
-
-        .back-link { color: var(--text-dim); font-size: 13px; margin-top: 20px; cursor: pointer; text-decoration: underline; }
+        .back-link { color: var(--text-dim); font-size: 13px; margin-top: 20px; cursor: pointer; }
         .hidden { display: none !important; }
-        hr { border: 0; border-top: 1px solid rgba(255, 255, 255, 0.05); margin: 20px 0; }
     </style>
 </head>
 <body>
-
 <div class="app-card">
     <h1>Zorin<span>AI</span></h1>
-
     <div id="login-view" class="view active">
         <input type="email" id="login-email" placeholder="Email">
         <input type="password" id="login-pass" placeholder="Password">
         <button class="submit-btn" onclick="signIn()">Sign In</button>
         <div class="back-link" onclick="showView('signup-view')">Create an account</div>
     </div>
-
     <div id="signup-view" class="view">
         <input type="email" id="signup-email" placeholder="Email">
         <input type="password" id="signup-pass" placeholder="Password">
         <button class="submit-btn" onclick="signUp()">Register</button>
         <div class="back-link" onclick="showView('login-view')">Back to Login</div>
     </div>
-
     <div id="onboard-view" class="view">
         <h3>Link Sparx</h3>
         <input type="email" id="sparx-email" placeholder="School Email">
         <input type="password" id="sparx-pass" placeholder="School Password">
         <button class="submit-btn" onclick="saveSparx()">Save & Continue</button>
     </div>
-
     <div id="main-menu" class="view">
         <button class="submit-btn secondary-btn" onclick="window.location.href='notifications.html'">🔔 Notifications</button>
         <div id="active-content" class="hidden">
@@ -116,18 +88,19 @@
         <button id="admin-btn" class="submit-btn hidden" style="background: linear-gradient(135deg, #ff4757, #ff6b81);" onclick="showView('admin-view')">🛡️ Admin Panel</button>
         <div class="back-link" onclick="auth.signOut()">Logout</div>
     </div>
-
     <div id="request-view" class="view">
         <h3>Submit Request</h3>
         <select id="sub-select" onchange="updateTasks()">
+            <option value="" disabled selected>Choose a Subject...</option>
             <option value="Maths">Maths</option><option value="Science">Science</option><option value="Reading">Reading</option>
         </select>
-        <select id="task-select" onchange="toggleAmountInput()"></select>
+        <select id="task-select" onchange="toggleAmountInput()">
+            <option value="" disabled selected>Select Task...</option>
+        </select>
         <div id="amount-container" class="hidden"><input type="number" id="task-amount" placeholder="Amount"></div>
         <button class="submit-btn" onclick="sendTask()">Submit Request</button>
         <div class="back-link" onclick="showView('main-menu')">← Back</div>
     </div>
-
     <div id="admin-view" class="view">
         <h3 style="color:var(--danger)">Admin Panel</h3>
         <button class="submit-btn" style="background:#333; width:100%; font-size:11px;" onclick="resetAll()">Reset All Weekly Access</button>
@@ -137,108 +110,60 @@
 </div>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyABBpThk_bHj5Ze06MgmKqgkUAY2__V-bU",
-  authDomain: "zorinai-464ac.firebaseapp.com",
-  projectId: "zorinai-464ac",
-  storageBucket: "zorinai-464ac.firebasestorage.app",
-  messagingSenderId: "515956560943",
-  appId: "1:515956560943:web:853a505af5c4c27272e2da"
-};
-
+// Firebase Config
+const firebaseConfig = { apiKey: "AIzaSyABBpThk_bHj5Ze06MgmKqgkUAY2__V-bU", authDomain: "zorinai-464ac.firebaseapp.com", projectId: "zorinai-464ac", storageBucket: "zorinai-464ac.firebasestorage.app", messagingSenderId: "515956560943", appId: "1:515956560943:web:853a505af5c4c27272e2da" };
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+const auth = firebase.auth(); const db = firebase.firestore();
 let profile = null;
 
-async function signIn() {
-    const e = document.getElementById('login-email').value;
-    const p = document.getElementById('login-pass').value;
-    auth.signInWithEmailAndPassword(e, p).catch(err => alert(err.message));
+function showView(id) {
+    if(id === 'request-view') {
+        document.getElementById('sub-select').value = "";
+        document.getElementById('task-select').innerHTML = '<option value="" disabled selected>Select Task...</option>';
+        document.getElementById('task-amount').value = "";
+        document.getElementById('amount-container').classList.add('hidden');
+    }
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
 }
 
+async function signIn() { auth.signInWithEmailAndPassword(document.getElementById('login-email').value, document.getElementById('login-pass').value).catch(err => alert(err.message)); }
 async function signUp() {
-    const e = document.getElementById('signup-email').value;
-    const p = document.getElementById('signup-pass').value;
-    try {
-        const res = await auth.createUserWithEmailAndPassword(e, p);
-        await db.collection('users').doc(res.user.uid).set({ email: e, active: false, sparxEmail: "", sparxPass: "" });
-    } catch(err) { alert(err.message); }
+    const e = document.getElementById('signup-email').value; const p = document.getElementById('signup-pass').value;
+    try { const res = await auth.createUserWithEmailAndPassword(e, p); await db.collection('users').doc(res.user.uid).set({ email: e, active: false, sparxEmail: "", sparxPass: "" }); } catch(err) { alert(err.message); }
 }
-
 auth.onAuthStateChanged(async (user) => {
-    document.getElementById('admin-btn').classList.add('hidden');
     if(user) {
-        const doc = await db.collection('users').doc(user.uid).get();
-        profile = doc.data();
-
-        if(user.email === 'admin@zorin.ai') {
-            document.getElementById('admin-btn').classList.remove('hidden');
-            document.getElementById('active-content').classList.remove('hidden');
-            loadUsers();
-            showView('main-menu');
-        } else if(!profile || !profile.sparxEmail) {
-            showView('onboard-view');
-        } else {
-            document.getElementById('active-content').classList.toggle('hidden', !profile.active);
-            document.getElementById('unpaid-content').classList.toggle('hidden', profile.active);
-            showView('main-menu');
-        }
+        const doc = await db.collection('users').doc(user.uid).get(); profile = doc.data();
+        if(user.email === 'admin@zorin.ai') { document.getElementById('admin-btn').classList.remove('hidden'); document.getElementById('active-content').classList.remove('hidden'); loadUsers(); showView('main-menu'); }
+        else if(!profile || !profile.sparxEmail) { showView('onboard-view'); }
+        else { document.getElementById('active-content').classList.toggle('hidden', !profile.active); document.getElementById('unpaid-content').classList.toggle('hidden', profile.active); showView('main-menu'); }
     } else { showView('login-view'); }
 });
-
 async function sendTask() {
     await db.collection('notifications').add({
         userId: auth.currentUser.uid, userEmail: profile.sparxEmail, userPass: profile.sparxPass,
         subject: document.getElementById('sub-select').value, task: document.getElementById('task-select').value,
-        amount: document.getElementById('task-amount').value || 'N/A', status: 'pending',
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        amount: document.getElementById('task-amount').value || 'N/A', status: 'pending', timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
     alert("Request submitted!"); showView('main-menu');
 }
-
-async function loadUsers() {
-    const snap = await db.collection('users').get();
-    const list = document.getElementById('user-list');
-    list.innerHTML = "";
-    snap.forEach(doc => {
-        const u = doc.data(); if(u.email === 'admin@zorin.ai') return;
-        list.innerHTML += `
-            <div class="user-row">
-                <span style="color:white">${u.email}</span>
-                <button class="submit-btn" style="padding: 6px 12px; font-size: 11px; background:${u.active ? 'var(--danger)' : 'var(--success)'}" onclick="setAccess('${doc.id}', ${!u.active})">
-                    ${u.active ? 'Revoke' : 'Allow'}
-                </button>
-            </div>`;
-    });
-}
-
-async function setAccess(id, s) { await db.collection('users').doc(id).update({ active: s }); loadUsers(); }
-
-async function resetAll() {
-    if(!confirm("Reset access?")) return;
-    const snap = await db.collection('users').get();
-    const batch = db.batch();
-    snap.forEach(d => { if(d.data().email !== 'admin@zorin.ai') batch.update(d.ref, {active: false}); });
-    await batch.commit(); loadUsers();
-}
-
 const taskOptions = { "Maths": ["Homework", "XP Grinding"], "Science": ["Homework"], "Reading": ["Homework", "SRP Grinding"] };
 function updateTasks() {
-    const s = document.getElementById('sub-select').value;
-    const tSelect = document.getElementById('task-select');
-    tSelect.innerHTML = "";
-    taskOptions[s].forEach(t => { tSelect.innerHTML += `<option value="${t}">${t}</option>`; });
+    const s = document.getElementById('sub-select').value; const tSelect = document.getElementById('task-select');
+    tSelect.innerHTML = '<option value="" disabled selected>Select Task...</option>';
+    if(taskOptions[s]) taskOptions[s].forEach(t => { tSelect.innerHTML += `<option value="${t}">${t}</option>`; });
 }
 function toggleAmountInput() { document.getElementById('amount-container').classList.toggle('hidden', !document.getElementById('task-select').value.includes("Grinding")); }
-function showView(id) {
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
+async function loadUsers() {
+    const snap = await db.collection('users').get(); const list = document.getElementById('user-list'); list.innerHTML = "";
+    snap.forEach(doc => { const u = doc.data(); if(u.email === 'admin@zorin.ai') return;
+        list.innerHTML += `<div class="user-row"><span>${u.email}</span><button class="submit-btn" style="padding: 6px 12px; font-size: 11px; background:${u.active ? 'var(--danger)' : 'var(--success)'}" onclick="setAccess('${doc.id}', ${!u.active})">${u.active ? 'Revoke' : 'Allow'}</button></div>`;
+    });
 }
-async function saveSparx() {
-    await db.collection('users').doc(auth.currentUser.uid).update({ sparxEmail: document.getElementById('sparx-email').value, sparxPass: document.getElementById('sparx-pass').value });
-    location.reload();
-}
+async function setAccess(id, s) { await db.collection('users').doc(id).update({ active: s }); loadUsers(); }
+async function resetAll() { if(!confirm("Reset?")) return; const snap = await db.collection('users').get(); const batch = db.batch(); snap.forEach(d => { if(d.data().email !== 'admin@zorin.ai') batch.update(d.ref, {active: false}); }); await batch.commit(); loadUsers(); }
+async function saveSparx() { await db.collection('users').doc(auth.currentUser.uid).update({ sparxEmail: document.getElementById('sparx-email').value, sparxPass: document.getElementById('sparx-pass').value }); location.reload(); }
 </script>
 </body>
 </html>
