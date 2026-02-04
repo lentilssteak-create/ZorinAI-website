@@ -101,32 +101,70 @@ function listenForUser(uid) {
 }
 
 function listenForAdmin() {
+    // We remove the .where() filter from the query to avoid needing a new index
     db.collection('notifications')
-      .where('status', 'in', ['pending', 'starting'])
       .orderBy('timestamp', 'desc')
       .onSnapshot((snap) => {
         const list = document.getElementById('admin-list');
-        list.innerHTML = snap.empty ? "Queue empty." : "";
+        let hasData = false;
+        list.innerHTML = "";
+
         snap.forEach(doc => {
             const d = doc.data();
-            list.innerHTML += `
-                <div class="notif-item">
-                    <b>${d.userEmail}</b>: ${d.subject}<br>
-                    <div style="margin-top:10px; display:flex; gap:10px;">
-                        <button onclick="adminAction('${doc.id}', 'starting')" style="background:var(--warning); border:none; color:white; padding:5px; border-radius:5px; cursor:pointer;">Start</button>
-                        <button onclick="adminAction('${doc.id}', 'finished')" style="background:var(--success); border:none; color:white; padding:5px; border-radius:5px; cursor:pointer;">Finish</button>
-                    </div>
-                </div>`;
+            
+            // We filter the 'pending' and 'starting' status here in the code instead
+            if (d.status === 'pending' || d.status === 'starting') {
+                hasData = true;
+                list.innerHTML += `
+                    <div class="notif-item" id="item-${doc.id}">
+                        <div style="margin-bottom:10px;">
+                            <b style="color:var(--zorin-blue)">${d.userEmail}</b><br>
+                            <span style="font-size:12px;">${d.subject} > ${d.task} ${d.amount !== 'N/A' ? `(${d.amount})` : ''}</span>
+                        </div>
+                        <div id="ctrl-${doc.id}" style="display:flex; gap:10px;">
+                            ${d.status === 'pending' ? 
+                                `<button class="btn" style="background:var(--warning)" onclick="adminAction('${doc.id}', 'starting')">Start Now</button>` 
+                                : `<span style="color:var(--warning); font-size:12px; font-weight:bold;">WORK IN PROGRESS</span>`}
+                            <button class="btn" style="background:var(--success)" onclick="adminAction('${doc.id}', 'finished')">Finish</button>
+                        </div>
+                    </div>`;
+            }
         });
+
+        if (!hasData) {
+            list.innerHTML = "<p style='color:var(--text-dim)'>No pending tasks in queue.</p>";
+        }
     }, (error) => {
+        console.error("ADMIN LIFELINE ERROR:", error);
         document.getElementById('admin-list').innerHTML = `<p style="color:var(--danger)">Admin Error: ${error.message}</p>`;
     });
 }
 
-async function adminAction(id, s) {
-    let note = "";
-    if(s === 'finished') note = prompt("Note for user:") || "";
-    await db.collection('notifications').doc(id).update({ status: s, extraInfo: note });
+async function adminAction(id, newStatus) {
+    const ctrl = document.getElementById(`ctrl-${id}`);
+    if (ctrl) ctrl.innerHTML = `<span style="color:var(--zorin-blue)">Updating...</span>`;
+
+    try {
+        let note = "";
+        if (newStatus === 'finished') {
+            note = prompt("Add a note for the student (optional):") || "";
+        }
+
+        // Updating these specific fields triggers the User's live listener
+        await db.collection('notifications').doc(id).update({
+            status: newStatus,
+            extraInfo: note,
+            lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        // For the admin, if it's finished, we can just hide it locally immediately
+        if (newStatus === 'finished') {
+            const el = document.getElementById(`item-${id}`);
+            if (el) el.style.display = 'none';
+        }
+    } catch (e) {
+        alert("Admin update failed: " + e.message);
+    }
 }
 </script>
 </body>
