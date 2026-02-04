@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZorinAI | Notifications</title>
+    <script src="https://www.gstatic.com/firebasejs/9.1.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.1/firebase-firestore-compat.js"></script>
+    <style>
+        :root {
+            --zorin-blue: #0078ff; --zorin-dark: #0a0e14; --card-bg: #161c24;
+            --input-bg: #1c252e; --text: #ffffff; --text-dim: #a0a6b1;
+            --danger: #ef4444; --warning: #f59e0b; --success: #22c55e;
+        }
+        body { margin: 0; background-color: var(--zorin-dark); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .app-card { background: var(--card-bg); width: 100%; max-width: 500px; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .notif-item { text-align: left; font-size: 13px; padding: 15px; border-radius: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 12px; }
+        .admin-controls { display: flex; gap: 8px; margin-top: 12px; }
+        .btn { flex: 1; padding: 10px; border: none; border-radius: 6px; cursor: pointer; color: white; font-weight: bold; transition: 0.2s; }
+        .btn:hover { opacity: 0.8; }
+        .back-link { display: inline-block; margin-top: 20px; color: var(--text-dim); text-decoration: none; font-size: 14px; }
+        .hidden { display: none !important; }
+        h2 span { color: var(--zorin-blue); }
+    </style>
+</head>
+<body>
+
+<div class="app-card">
+    <h2>Zorin<span>AI</span> Notifications</h2>
+
+    <div id="user-view" class="hidden">
+        <p style="color: var(--text-dim); font-size: 14px;">Your Task History</p>
+        <div id="user-list"></div>
+    </div>
+
+    <div id="admin-view" class="hidden">
+        <p style="color: var(--danger); font-size: 14px; font-weight: bold;">Incoming Task Requests</p>
+        <div id="admin-list"></div>
+    </div>
+
+    <a href="index.html" class="back-link">← Return to Dashboard</a>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyABBpThk_bHj5Ze06MgmKqgkUAY2__V-bU",
+  authDomain: "zorinai-464ac.firebaseapp.com",
+  projectId: "zorinai-464ac",
+  storageBucket: "zorinai-464ac.firebasestorage.app",
+  messagingSenderId: "515956560943",
+  appId: "1:515956560943:web:853a505af5c4c27272e2da"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+auth.onAuthStateChanged(user => {
+    if (!user) { window.location.href = "index.html"; return; }
+
+    if (user.email === 'admin@zorin.ai') {
+        document.getElementById('admin-view').classList.remove('hidden');
+        listenForAdmin();
+    } else {
+        document.getElementById('user-view').classList.remove('hidden');
+        listenForUser(user.uid);
+    }
+});
+
+function listenForUser(uid) {
+    db.collection('notifications').where('userId', '==', uid).orderBy('timestamp', 'desc').onSnapshot(snap => {
+        const list = document.getElementById('user-list');
+        list.innerHTML = snap.empty ? "<p style='color:#555'>No history found.</p>" : "";
+        snap.forEach(doc => {
+            const d = doc.data();
+            const statusColor = d.status === 'finished' ? 'var(--success)' : (d.status === 'starting' ? 'var(--warning)' : 'var(--text-dim)');
+            list.innerHTML += `
+                <div class="notif-item">
+                    <b>${d.subject}</b>: ${d.task} <br>
+                    <span style="color:${statusColor}">● ${d.status.toUpperCase()}</span>
+                    ${d.extraInfo ? `<br><small style="color:var(--text-dim)">Note: ${d.extraInfo}</small>` : ''}
+                </div>`;
+        });
+    });
+}
+
+function listenForAdmin() {
+    db.collection('notifications').where('status', '==', 'pending').orderBy('timestamp', 'desc').onSnapshot(snap => {
+        const list = document.getElementById('admin-list');
+        list.innerHTML = snap.empty ? "<p style='color:#555'>All clear! No pending tasks.</p>" : "";
+        snap.forEach(doc => {
+            const d = doc.data();
+            list.innerHTML += `
+                <div class="notif-item">
+                    <b style="color:var(--zorin-blue)">${d.userEmail}</b><br>
+                    ${d.subject} | ${d.task} (${d.amount})
+                    <div class="admin-controls">
+                        <button class="btn" style="background:var(--warning)" onclick="updateStatus('${doc.id}', 'starting')">Start</button>
+                        <button class="btn" style="background:var(--success)" onclick="finishTask('${doc.id}')">Finish</button>
+                    </div>
+                </div>`;
+        });
+    });
+}
+
+async function updateStatus(id, s) { await db.collection('notifications').doc(id).update({ status: s }); }
+async function finishTask(id) { 
+    const note = prompt("Optional note for the user:");
+    await db.collection('notifications').doc(id).update({ status: 'finished', extraInfo: note || "" }); 
+}
+</script>
+</body>
+</html>
