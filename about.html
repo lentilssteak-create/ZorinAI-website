@@ -54,7 +54,7 @@
             padding: 20px 0;
             position: sticky;
             top: 0;
-            background: rgba(5, 7, 10, 0.7);
+            background: rgba(5, 7, 10, 0.8);
             backdrop-filter: blur(15px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             z-index: 1000;
@@ -71,21 +71,29 @@
             font-size: 14px;
             font-weight: 500;
             transition: 0.3s;
+            position: relative;
         }
         .nav-links a:hover { color: white; }
-
-        /* Hero Section */
-        .hero { text-align: center; padding: 120px 0 80px; }
-        .hero h1 { 
-            font-size: clamp(40px, 8vw, 64px); 
-            letter-spacing: -2px; 
-            margin-bottom: 20px;
-            line-height: 1.1;
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background-color: var(--zorin-blue);
+            transition: 0.3s;
         }
-        .hero p { color: var(--text-dim); font-size: 20px; max-width: 600px; margin: 0 auto; }
+        .nav-links a:hover::after { width: 100%; }
 
-        /* Content Sections */
+        /* Sections */
+        .hero { text-align: center; padding: 120px 0 80px; }
+        .hero h1 { font-size: clamp(40px, 8vw, 64px); letter-spacing: -2px; line-height: 1.1; margin-bottom: 20px; }
+        .hero span { background: linear-gradient(90deg, #0078ff, #00c6ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
         section { padding: 80px 0; }
+        
+        /* Springy Glass Cards */
         .glass-card {
             background: var(--card-bg);
             padding: 40px;
@@ -93,6 +101,13 @@
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .glass-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--zorin-blue);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
         }
 
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
@@ -101,31 +116,20 @@
         h2 { font-size: 36px; margin-bottom: 20px; letter-spacing: -1px; }
         .highlight { color: var(--zorin-blue); font-weight: 600; }
 
-        /* Stats */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 20px;
-            margin-top: 40px;
-        }
-        .stat-item { text-align: center; }
-        .stat-num { font-size: 40px; font-weight: 800; color: var(--zorin-blue); display: block; }
-        .stat-label { color: var(--text-dim); font-size: 14px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 20px; margin-top: 40px; }
+        .stat-num { font-size: 32px; font-weight: 800; color: var(--zorin-blue); display: block; }
+        .stat-label { color: var(--text-dim); font-size: 13px; }
 
         /* Pricing Card */
-        .pricing-card {
-            max-width: 450px;
-            margin: 0 auto;
-            text-align: center;
-            border: 1px solid var(--zorin-blue);
-        }
-        .price { font-size: 64px; font-weight: 800; margin: 20px 0; }
+        .pricing-card { max-width: 450px; margin: 0 auto; text-align: center; border: 1px solid rgba(0, 120, 255, 0.3); }
+        .price { font-size: 64px; font-weight: 800; margin: 15px 0; }
         .price span { font-size: 20px; color: var(--text-dim); }
 
-        .features { list-style: none; margin: 30px 0; text-align: left; }
-        .features li { padding: 10px 0; color: var(--text-dim); display: flex; align-items: center; }
-        .features li::before { content: "✓"; color: var(--zorin-blue); margin-right: 15px; font-weight: 800; }
+        .features { list-style: none; margin: 25px 0; text-align: left; }
+        .features li { padding: 8px 0; color: var(--text-dim); display: flex; align-items: center; font-size: 15px; }
+        .features li::before { content: "✓"; color: var(--zorin-blue); margin-right: 12px; font-weight: 800; }
 
+        /* Animated CTA Button */
         .cta-btn {
             display: block;
             width: 100%;
@@ -135,12 +139,17 @@
             text-decoration: none;
             border-radius: 16px;
             font-weight: 700;
-            transition: 0.3s;
+            text-align: center;
+            transition: all 0.3s ease;
             box-shadow: 0 10px 20px rgba(0, 120, 255, 0.2);
         }
-        .cta-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0, 120, 255, 0.4); }
+        .cta-btn:hover {
+            transform: scale(1.05);
+            filter: brightness(1.15);
+            box-shadow: 0 15px 30px rgba(0, 120, 255, 0.4);
+        }
 
-        footer { padding: 60px 0; text-align: center; color: var(--text-dim); font-size: 14px; }
+        footer { padding: 60px 0; text-align: center; color: var(--text-dim); font-size: 14px; border-top: 1px solid rgba(255, 255, 255, 0.05); }
     </style>
 </head>
 <body>
@@ -162,63 +171,60 @@
     <main class="container">
         <section class="hero">
             <h1>Revolutionizing <br><span>Homework Help</span></h1>
-            <p>High-quality, instant answers built to make education accessible for everyone.</p>
+            <p style="color: var(--text-dim); font-size: 1.2rem; margin-top: 15px;">High-quality, instant answers built to make education accessible.</p>
         </section>
 
         <section id="about" class="grid">
-            <div>
-                <h2>Our Story</h2>
-                <p style="margin-bottom: 20px; color: var(--text-dim);">ZorinAI was created to solve a simple problem: traditional AI tools are either too expensive or too slow.</p>
-                <p style="color: var(--text-dim);">We provide <span class="highlight">instant, reliable assistance</span> at a fraction of the cost.</p>
-                
+            <div class="glass-card">
+                <h3 style="color: var(--zorin-blue); margin-bottom: 10px;">Our Mission</h3>
+                <p>ZorinAI was created to solve a simple problem: traditional AI tools are either too expensive or too slow. We provide <span class="highlight">instant, reliable assistance</span> at a fraction of the cost.</p>
                 <div class="stats-grid">
                     <div class="stat-item"><span class="stat-num">20+</span><span class="stat-label">Students</span></div>
                     <div class="stat-item"><span class="stat-num">98%</span><span class="stat-label">Success Rate</span></div>
                     <div class="stat-item"><span class="stat-num">24/7</span><span class="stat-label">Uptime</span></div>
                 </div>
             </div>
-            <div class="glass-card">
-                <h3 style="margin-bottom: 15px; color: var(--zorin-blue);">The Partnership</h3>
-                <p style="color: var(--text-dim); font-size: 15px;">Powered by the combined expertise of <span class="highlight">Sparxie + Sparxo</span>, our platform transforms how you handle your workload.</p>
+            <div style="padding-left: 20px;">
+                <h2>Expertly Crafted</h2>
+                <p style="color: var(--text-dim);">Powered by the expertise of <span class="highlight">Sparxie + Sparxo</span>, our platform transforms how you handle your workload. We focus on accuracy and speed so you can focus on learning.</p>
             </div>
         </section>
 
         <section id="features">
-            <h2 style="text-align: center; margin-bottom: 50px;">Why Choose Us?</h2>
-            <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+            <h2 style="text-align: center; margin-bottom: 50px;">Core Features</h2>
+            <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
                 <div class="glass-card">
                     <div style="font-size: 32px; margin-bottom: 15px;">⚡</div>
                     <h3>Instant Support</h3>
-                    <p style="color: var(--text-dim);">Get help the moment you need it, 24/7.</p>
+                    <p style="color: var(--text-dim); font-size: 14px;">Get help the moment you need it, with response times under 5 seconds.</p>
                 </div>
                 <div class="glass-card">
                     <div style="font-size: 32px; margin-bottom: 15px;">📚</div>
-                    <h3>Reliable Answers</h3>
-                    <p style="color: var(--text-dim);">Accurate results across all your subjects.</p>
+                    <h3>Multi-Subject</h3>
+                    <p style="color: var(--text-dim); font-size: 14px;">From Maths and Science to Reading, we've got the logic to handle it all.</p>
                 </div>
                 <div class="glass-card">
                     <div style="font-size: 32px; margin-bottom: 15px;">🔒</div>
-                    <h3>Encrypted Data</h3>
-                    <p style="color: var(--text-dim);">Your privacy is protected with industry-standard encryption.</p>
+                    <h3>Privacy First</h3>
+                    <p style="color: var(--text-dim); font-size: 14px;">Your school credentials and data are encrypted and never shared.</p>
                 </div>
             </div>
         </section>
 
         <section id="pricing">
             <div class="glass-card pricing-card">
-                <span style="background: var(--zorin-blue); padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: 700;">MOST POPULAR</span>
+                <span style="background: var(--zorin-blue); padding: 5px 15px; border-radius: 20px; font-size: 11px; font-weight: 800; letter-spacing: 1px;">MOST POPULAR</span>
                 <div class="price">£2<span>/week</span></div>
-                <p style="color: var(--zorin-blue); font-weight: 700;">✨ Unlimited Access</p>
+                <p style="color: var(--zorin-blue); font-weight: 700;">Unlimited Plan</p>
                 
                 <ul class="features">
                     <li>Unlimited homework questions</li>
                     <li>24/7 AI assistance</li>
                     <li>Step-by-step explanations</li>
-                    <li>All subjects covered</li>
+                    <li>No commitment, cancel anytime</li>
                 </ul>
 
                 <a href="index.html" class="cta-btn">Get Started Now</a>
-                <p style="font-size: 12px; color: var(--text-dim); margin-top: 15px;">Cancel anytime • No commitment</p>
             </div>
         </section>
     </main>
