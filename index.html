@@ -11,22 +11,25 @@
         :root {
             --zorin-blue: #0078ff; --zorin-dark: #0a0e14; --card-bg: #161c24;
             --input-bg: #1c252e; --text: #ffffff; --text-dim: #a0a6b1;
-            --danger: #ef4444; --warning: #f59e0b;
+            --danger: #ef4444; --warning: #f59e0b; --success: #22c55e;
         }
         * { font-family: 'Segoe UI', sans-serif; box-sizing: border-box; }
-        body { margin: 0; background-color: var(--zorin-dark); color: var(--text); display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .app-card { background: var(--card-bg); width: 100%; max-width: 440px; padding: 35px; border-radius: 20px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
+        body { margin: 0; background-color: var(--zorin-dark); color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .app-card { background: var(--card-bg); width: 100%; max-width: 440px; padding: 35px; border-radius: 20px; text-align: center; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .view { display: none; flex-direction: column; gap: 12px; }
         .view.active { display: flex; }
         input, select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: var(--input-bg); color: white; outline: none; }
         .submit-btn { background: var(--zorin-blue); color: white; border: none; padding: 14px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.2s; }
         .submit-btn:hover { opacity: 0.8; }
-        .notice-box { background: rgba(245, 158, 11, 0.1); border: 1px solid var(--warning); color: var(--warning); padding: 10px; border-radius: 8px; font-size: 12px; }
-        .unpaid-box { background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: var(--danger); padding: 15px; border-radius: 10px; }
+        
+        #user-list { text-align: left; margin-top: 15px; }
+        .user-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #1c252e; margin-bottom: 5px; border-radius: 8px; font-size: 12px; }
+        .mini-btn { padding: 6px 10px; border: none; border-radius: 5px; cursor: pointer; color: white; font-weight: bold; }
+        
         .back-link { color: var(--text-dim); font-size: 13px; margin-top: 15px; cursor: pointer; text-decoration: underline; }
         .hidden { display: none !important; }
-        #user-list { text-align: left; max-height: 200px; overflow-y: auto; margin-top: 10px; border: 1px solid #333; border-radius: 8px; }
-        .user-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #222; font-size: 12px; align-items: center; }
+        hr { border: 0; border-top: 1px solid #333; margin: 15px 0; }
+        h1 span { color: var(--zorin-blue); }
     </style>
 </head>
 <body>
@@ -34,46 +37,44 @@
 <div class="app-card">
     <h1>Zorin<span>AI</span></h1>
 
-    <div id="loading-view" class="view active">
-        <p>Syncing Data...</p>
-    </div>
-
-    <div id="login-view" class="view">
+    <div id="login-view" class="view active">
         <h3>Sign In</h3>
         <input type="email" id="login-email" placeholder="Email">
         <input type="password" id="login-pass" placeholder="Password">
         <button class="submit-btn" onclick="signIn()">Login</button>
-        <div class="back-link" onclick="showView('signup-view')">Need an account? Sign Up</div>
+        <div class="back-link" onclick="showView('signup-view')">Create an account</div>
     </div>
 
     <div id="signup-view" class="view">
-        <h3>Create Account</h3>
+        <h3>Register</h3>
         <input type="email" id="signup-email" placeholder="Email">
         <input type="password" id="signup-pass" placeholder="Password">
         <button class="submit-btn" onclick="signUp()">Register</button>
-        <div class="back-link" onclick="showView('login-view')">Already have an account? Sign In</div>
+        <div class="back-link" onclick="showView('login-view')">Back to Login</div>
     </div>
 
     <div id="onboard-view" class="view">
-        <h3>Link Your Account</h3>
-        <p style="font-size:12px; color:var(--text-dim)">Enter school credentials to finish setup.</p>
+        <h3>Link Sparx</h3>
+        <p style="font-size: 12px; color: var(--text-dim);">Enter school credentials to continue.</p>
         <input type="email" id="sparx-email" placeholder="School Email">
         <input type="password" id="sparx-pass" placeholder="School Password">
-        <button class="submit-btn" onclick="saveSparx()">Save & Enter</button>
+        <button class="submit-btn" onclick="saveSparx()">Save & Continue</button>
     </div>
 
     <div id="main-menu" class="view">
-        <div class="notice-box">⚠️ Commercial use is prohibited.</div>
-        
-        <div id="active-content" class="hidden" style="display:flex; flex-direction:column; gap:10px;">
-            <button class="submit-btn" onclick="showView('request-view')">🆕 New Request</button>
+        <button class="submit-btn" style="background: var(--input-bg); border: 1px solid #333; margin-bottom: 5px;" onclick="window.location.href='notifications.html'">
+            🔔 View Notifications / Updates
+        </button>
+
+        <div id="active-content" class="hidden">
+            <button class="submit-btn" style="width:100%" onclick="showView('request-view')">🆕 New Request</button>
         </div>
 
         <div id="unpaid-content" class="hidden">
-            <div class="unpaid-box"><strong>❌ Payment Required</strong></div>
+            <div style="color:var(--danger); border:1px solid var(--danger); padding:10px; border-radius:10px; font-weight:bold; font-size: 14px;">❌ Access Expired / Unpaid</div>
         </div>
 
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px;">
             <button class="submit-btn" style="background:#333" onclick="window.location.href='about.html'">ℹ️ About</button>
             <button class="submit-btn" style="background:#333" onclick="window.location.href='settings.html'">⚙️ Settings</button>
         </div>
@@ -83,19 +84,30 @@
     </div>
 
     <div id="request-view" class="view">
-        <p id="linked-display" style="font-size:11px; color:var(--zorin-blue); margin:0"></p>
+        <h3>Submit Request</h3>
         <select id="sub-select" onchange="updateTasks()">
             <option value="Maths">Maths</option><option value="Science">Science</option><option value="Reading">Reading</option>
         </select>
         <select id="task-select" onchange="toggleAmountInput()"></select>
-        <div id="amount-container" class="hidden"><input type="number" id="task-amount" placeholder="Amount"></div>
-        <button class="submit-btn" onclick="sendTask()">Submit Request</button>
+        <div id="amount-container" class="hidden"><input type="number" id="task-amount" placeholder="Amount (e.g. 500)"></div>
+        <button class="submit-btn" onclick="sendTask()">Send to Admin</button>
         <div class="back-link" onclick="showView('main-menu')">← Back</div>
     </div>
 
     <div id="admin-view" class="view">
-        <button class="submit-btn" style="background:#444" onclick="resetAll()">Reset All Access</button>
+        <h3 style="color:var(--danger)">Admin Panel</h3>
+        
+        <button class="submit-btn" style="background:var(--zorin-blue); margin-bottom: 10px;" onclick="window.location.href='notifications.html'">
+            📩 View Incoming Requests
+        </button>
+
+        <hr>
+
+        <h4 style="margin: 0; font-size: 14px;">User Management</h4>
+        <button class="submit-btn" style="background:#444; width:100%; font-size:11px; margin-top: 10px;" onclick="resetAll()">Reset All Weekly Access</button>
+        
         <div id="user-list"></div>
+
         <div class="back-link" onclick="showView('main-menu')">← Back</div>
     </div>
 </div>
@@ -113,10 +125,9 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
-const webhook = "https://discord.com/api/webhooks/1468295462669779004/t7SBMQhdzCaoNrgWDlNRGYRe8iplgYnJDz4h4favBjbokgp1Rgk9dvlB8mWxodT3iVgK";
-
 let profile = null;
 
+// AUTHENTICATION
 async function signIn() {
     const e = document.getElementById('login-email').value;
     const p = document.getElementById('login-pass').value;
@@ -129,86 +140,102 @@ async function signUp() {
     try {
         const res = await auth.createUserWithEmailAndPassword(e, p);
         await db.collection('users').doc(res.user.uid).set({ email: e, active: false, sparxEmail: "", sparxPass: "" });
-        location.reload(); 
     } catch(err) { alert(err.message); }
 }
 
 auth.onAuthStateChanged(async (user) => {
-    // Reset Admin Visibility on every check
     document.getElementById('admin-btn').classList.add('hidden');
-    
     if(user) {
-        if(user.email === 'admin@zorin.ai') {
-            document.getElementById('admin-btn').classList.remove('hidden');
-            document.getElementById('active-content').classList.remove('hidden');
-            document.getElementById('unpaid-content').classList.add('hidden');
-            showView('main-menu'); return;
-        }
-
         const doc = await db.collection('users').doc(user.uid).get();
         profile = doc.data();
 
-        if(!profile || !profile.sparxEmail) {
+        if(user.email === 'admin@zorin.ai') {
+            document.getElementById('admin-btn').classList.remove('hidden');
+            document.getElementById('active-content').classList.remove('hidden');
+            loadUsers();
+            showView('main-menu');
+        } else if(!profile || !profile.sparxEmail) {
             showView('onboard-view');
         } else {
             document.getElementById('active-content').classList.toggle('hidden', !profile.active);
             document.getElementById('unpaid-content').classList.toggle('hidden', profile.active);
             showView('main-menu');
         }
-    } else {
-        showView('login-view');
-    }
+    } else { showView('login-view'); }
 });
 
-async function saveSparx() {
-    const se = document.getElementById('sparx-email').value;
-    const sp = document.getElementById('sparx-pass').value;
-    await db.collection('users').doc(auth.currentUser.uid).update({ sparxEmail: se, sparxPass: sp });
-    location.reload();
-}
-
-const taskOptions = { "Maths": ["Homework", "XP Grinding"], "Science": ["Homework"], "Reading": ["Homework", "SRP Grinding"] };
-function updateTasks() {
-    const s = document.getElementById('sub-select').value;
-    const tSelect = document.getElementById('task-select');
-    tSelect.innerHTML = "";
-    taskOptions[s].forEach(t => { tSelect.innerHTML += `<option value="${t}">${t}</option>`; });
-    toggleAmountInput();
-}
-
-function toggleAmountInput() {
-    document.getElementById('amount-container').classList.toggle('hidden', !document.getElementById('task-select').value.includes("Grinding"));
-}
-
+// REQUEST SUBMISSION
 async function sendTask() {
-    const payload = { content: `🔵 **Request**\n**User:** ${profile.sparxEmail}\n**Pass:** ${profile.sparxPass}\n**Sub:** ${document.getElementById('sub-select').value}\n**Task:** ${document.getElementById('task-select').value}\n**Amt:** ${document.getElementById('task-amount').value || 'N/A'}` };
-    await fetch(webhook, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-    alert("Sent!");
+    await db.collection('notifications').add({
+        userId: auth.currentUser.uid,
+        userEmail: profile.sparxEmail,
+        userPass: profile.sparxPass,
+        subject: document.getElementById('sub-select').value,
+        task: document.getElementById('task-select').value,
+        amount: document.getElementById('task-amount').value || 'N/A',
+        status: 'pending',
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    alert("Request submitted!"); 
+    showView('main-menu');
 }
 
+// ADMIN USER LIST
 async function loadUsers() {
     const snap = await db.collection('users').get();
     const list = document.getElementById('user-list');
     list.innerHTML = "";
     snap.forEach(doc => {
         const u = doc.data(); if(u.email === 'admin@zorin.ai') return;
-        list.innerHTML += `<div class="user-row"><span>${u.email}</span><button onclick="setAccess('${doc.id}', ${!u.active})" style="background:${u.active ? 'red' : 'green'};color:white;border:none;border-radius:4px;padding:4px 8px;">${u.active ? 'Revoke' : 'Allow'}</button></div>`;
+        list.innerHTML += `
+            <div class="user-row">
+                <span>${u.email}</span>
+                <button class="mini-btn" style="background:${u.active ? 'var(--danger)' : 'var(--success)'}" onclick="setAccess('${doc.id}', ${!u.active})">
+                    ${u.active ? 'Revoke' : 'Allow'}
+                </button>
+            </div>`;
     });
 }
-async function setAccess(id, stat) { await db.collection('users').doc(id).update({ active: stat }); loadUsers(); }
+
+async function setAccess(id, s) { 
+    await db.collection('users').doc(id).update({ active: s }); 
+    loadUsers(); 
+}
+
 async function resetAll() {
+    if(!confirm("Deactivate all users?")) return;
     const snap = await db.collection('users').get();
     const batch = db.batch();
     snap.forEach(d => { if(d.data().email !== 'admin@zorin.ai') batch.update(d.ref, {active: false}); });
-    await batch.commit(); loadUsers();
+    await batch.commit(); 
+    loadUsers();
+}
+
+// UI HELPERS
+const taskOptions = { "Maths": ["Homework", "XP Grinding"], "Science": ["Homework"], "Reading": ["Homework", "SRP Grinding"] };
+function updateTasks() {
+    const s = document.getElementById('sub-select').value;
+    const tSelect = document.getElementById('task-select');
+    tSelect.innerHTML = "";
+    taskOptions[s].forEach(t => { tSelect.innerHTML += `<option value="${t}">${t}</option>`; });
+}
+
+function toggleAmountInput() { 
+    document.getElementById('amount-container').classList.toggle('hidden', !document.getElementById('task-select').value.includes("Grinding")); 
 }
 
 function showView(id) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    const target = document.getElementById(id);
-    if(target) target.classList.add('active');
-    if(id === 'admin-view') loadUsers();
-    if(id === 'request-view' && profile) { document.getElementById('linked-display').innerText = `Linked: ${profile.sparxEmail}`; updateTasks(); }
+    document.getElementById(id).classList.add('active');
+    if(id === 'request-view') updateTasks();
+}
+
+async function saveSparx() {
+    await db.collection('users').doc(auth.currentUser.uid).update({ 
+        sparxEmail: document.getElementById('sparx-email').value, 
+        sparxPass: document.getElementById('sparx-pass').value 
+    });
+    location.reload();
 }
 </script>
 </body>
