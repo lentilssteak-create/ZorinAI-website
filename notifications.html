@@ -9,17 +9,42 @@
     <script src="https://www.gstatic.com/firebasejs/9.1.1/firebase-firestore-compat.js"></script>
     <style>
         :root {
-            --zorin-blue: #0078ff; --zorin-dark: #0a0e14; --card-bg: #161c24;
-            --input-bg: #1c252e; --text: #ffffff; --text-dim: #a0a6b1;
-            --danger: #ef4444; --warning: #f59e0b; --success: #22c55e;
+            --zorin-blue: #0078ff; --zorin-dark: #05070a; 
+            --card-bg: rgba(22, 28, 36, 0.7); --text: #ffffff; 
+            --text-dim: #a0a6b1; --danger: #ff4757; --warning: #f59e0b; --success: #2ed573;
         }
-        body { margin: 0; background-color: var(--zorin-dark); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .app-card { background: var(--card-bg); width: 100%; max-width: 500px; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .notif-item { text-align: left; font-size: 13px; padding: 15px; border-radius: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 12px; }
-        .admin-controls { display: flex; gap: 8px; margin-top: 12px; }
-        .btn { flex: 1; padding: 10px; border: none; border-radius: 6px; cursor: pointer; color: white; font-weight: bold; transition: 0.2s; }
-        .btn:hover { opacity: 0.8; }
-        .back-link { display: inline-block; margin-top: 20px; color: var(--text-dim); text-decoration: none; font-size: 14px; }
+        body { 
+            margin: 0; background: var(--zorin-dark); color: var(--text); 
+            font-family: 'Inter', sans-serif; display: flex; justify-content: center; 
+            align-items: center; min-height: 100vh; overflow-x: hidden;
+        }
+        /* Animated Liquid Background */
+        body::before {
+            content: ""; position: absolute; width: 200%; height: 200%;
+            background: radial-gradient(circle at 30% 30%, rgba(0, 120, 255, 0.1) 0%, transparent 40%),
+                        radial-gradient(circle at 70% 70%, rgba(255, 71, 87, 0.05) 0%, transparent 40%);
+            animation: liquidMove 15s ease-in-out infinite alternate; z-index: -1;
+        }
+        @keyframes liquidMove { 0% { transform: translate(-5%, -5%); } 100% { transform: translate(5%, 5%); } }
+
+        .app-card { 
+            background: var(--card-bg); width: 100%; max-width: 480px; padding: 35px; 
+            border-radius: 28px; backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5); text-align: center;
+        }
+        .notif-item { 
+            text-align: left; padding: 16px; border-radius: 16px; 
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); 
+            margin-bottom: 15px; transition: 0.3s;
+        }
+        .admin-controls { display: flex; gap: 10px; margin-top: 15px; }
+        .btn { 
+            flex: 1; padding: 10px; border: none; border-radius: 10px; 
+            cursor: pointer; color: white; font-weight: bold; transition: 0.3s; 
+        }
+        .btn:hover { transform: translateY(-2px); filter: brightness(1.2); }
+        .back-link { display: inline-block; margin-top: 20px; color: var(--text-dim); text-decoration: none; font-size: 14px; transition: 0.3s; }
+        .back-link:hover { color: white; }
         .hidden { display: none !important; }
         h2 span { color: var(--zorin-blue); }
     </style>
@@ -27,19 +52,19 @@
 <body>
 
 <div class="app-card">
-    <h2>Zorin<span>AI</span> Notifications</h2>
+    <h2>Zorin<span>AI</span> Updates</h2>
 
     <div id="user-view" class="hidden">
-        <p style="color: var(--text-dim); font-size: 14px;">Your Task History</p>
+        <p style="color: var(--text-dim);">Recent Task Activity</p>
         <div id="user-list"></div>
     </div>
 
     <div id="admin-view" class="hidden">
-        <p style="color: var(--danger); font-size: 14px; font-weight: bold;">Incoming Task Requests</p>
+        <p style="color: var(--danger); font-weight: bold;">Live Work Queue</p>
         <div id="admin-list"></div>
     </div>
 
-    <a href="index.html" class="back-link">← Return to Dashboard</a>
+    <a href="index.html" class="back-link">← Back to Dashboard</a>
 </div>
 
 <script>
@@ -58,7 +83,6 @@ const db = firebase.firestore();
 
 auth.onAuthStateChanged(user => {
     if (!user) { window.location.href = "index.html"; return; }
-
     if (user.email === 'admin@zorin.ai') {
         document.getElementById('admin-view').classList.remove('hidden');
         listenForAdmin();
@@ -69,44 +93,53 @@ auth.onAuthStateChanged(user => {
 });
 
 function listenForUser(uid) {
-    db.collection('notifications').where('userId', '==', uid).orderBy('timestamp', 'desc').onSnapshot(snap => {
+    db.collection('notifications').where('userId', '==', uid).orderBy('timestamp', 'desc').limit(10).onSnapshot(snap => {
         const list = document.getElementById('user-list');
-        list.innerHTML = snap.empty ? "<p style='color:#555'>No history found.</p>" : "";
+        list.innerHTML = snap.empty ? "<p style='color:#555'>No active tasks.</p>" : "";
         snap.forEach(doc => {
             const d = doc.data();
-            const statusColor = d.status === 'finished' ? 'var(--success)' : (d.status === 'starting' ? 'var(--warning)' : 'var(--text-dim)');
+            const color = d.status === 'finished' ? 'var(--success)' : (d.status === 'starting' ? 'var(--warning)' : 'var(--text-dim)');
             list.innerHTML += `
                 <div class="notif-item">
-                    <b>${d.subject}</b>: ${d.task} <br>
-                    <span style="color:${statusColor}">● ${d.status.toUpperCase()}</span>
-                    ${d.extraInfo ? `<br><small style="color:var(--text-dim)">Note: ${d.extraInfo}</small>` : ''}
+                    <b style="color:var(--zorin-blue)">${d.subject}</b>: ${d.task} <br>
+                    <span style="color:${color}; font-size:12px;">● ${d.status.toUpperCase()}</span>
+                    ${d.extraInfo ? `<br><small style="opacity:0.6">Admin Note: ${d.extraInfo}</small>` : ''}
                 </div>`;
         });
     });
 }
 
 function listenForAdmin() {
-    db.collection('notifications').where('status', '==', 'pending').orderBy('timestamp', 'desc').onSnapshot(snap => {
+    // FIXED: Now listens for BOTH 'pending' and 'starting' so tasks don't vanish
+    db.collection('notifications')
+      .where('status', 'in', ['pending', 'starting']) 
+      .orderBy('timestamp', 'desc')
+      .onSnapshot(snap => {
         const list = document.getElementById('admin-list');
-        list.innerHTML = snap.empty ? "<p style='color:#555'>All clear! No pending tasks.</p>" : "";
+        list.innerHTML = snap.empty ? "<p style='color:#555'>Queue is empty.</p>" : "";
         snap.forEach(doc => {
             const d = doc.data();
+            const isStarting = d.status === 'starting';
             list.innerHTML += `
-                <div class="notif-item">
+                <div class="notif-item" style="border-left: 4px solid ${isStarting ? 'var(--warning)' : 'var(--zorin-blue)'}">
                     <b style="color:var(--zorin-blue)">${d.userEmail}</b><br>
-                    ${d.subject} | ${d.task} (${d.amount})
+                    ${d.subject} | ${d.task} (${d.amount})<br>
+                    <small style="opacity:0.5">Status: ${d.status}</small>
                     <div class="admin-controls">
                         <button class="btn" style="background:var(--warning)" onclick="updateStatus('${doc.id}', 'starting')">Start</button>
                         <button class="btn" style="background:var(--success)" onclick="finishTask('${doc.id}')">Finish</button>
                     </div>
                 </div>`;
         });
+    }, err => {
+        console.error("Firestore Error:", err);
+        alert("Admin permission error. Check your Firestore Index/Rules.");
     });
 }
 
 async function updateStatus(id, s) { await db.collection('notifications').doc(id).update({ status: s }); }
 async function finishTask(id) { 
-    const note = prompt("Optional note for the user:");
+    const note = prompt("Completion Note:");
     await db.collection('notifications').doc(id).update({ status: 'finished', extraInfo: note || "" }); 
 }
 </script>
