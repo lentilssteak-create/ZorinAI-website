@@ -8,52 +8,107 @@
     <script src="https://www.gstatic.com/firebasejs/9.1.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.1/firebase-firestore-compat.js"></script>
     <style>
-        :root { 
-            --zorin-blue: #0078ff; --zorin-dark: #0a0e14; --card-bg: #161c24; 
-            --input-bg: #1c252e; --text: #ffffff; --text-dim: #a0a6b1; --danger: #ef4444; 
+        :root {
+            --zorin-blue: #0078ff; 
+            --zorin-dark: #05070a; 
+            --card-bg: rgba(22, 28, 36, 0.7);
+            --input-bg: rgba(28, 37, 46, 0.8); 
+            --text: #ffffff; 
+            --text-dim: #a0a6b1;
+            --danger: #ff4757; 
         }
-        * { box-sizing: border-box; }
-        body { margin: 0; background-color: var(--zorin-dark); color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .app-card { background: var(--card-bg); width: 100%; max-width: 440px; padding: 35px; border-radius: 20px; text-align: center; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h2 { margin-top: 0; color: var(--zorin-blue); }
-        h4 { text-align: left; margin: 20px 0 8px 0; font-size: 11px; letter-spacing: 1px; color: var(--text-dim); text-transform: uppercase; }
-        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: var(--input-bg); color: white; margin-bottom: 10px; outline: none; }
-        input:focus { border-color: var(--zorin-blue); }
-        .btn { width: 100%; padding: 13px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; margin-bottom: 10px; transition: 0.2s; }
-        .btn:hover { opacity: 0.8; }
-        .blue { background: var(--zorin-blue); color: white; }
-        .red { background: var(--danger); color: white; }
-        .back-link { display: inline-block; margin-top: 15px; color: var(--text-dim); text-decoration: none; font-size: 13px; }
+
+        * { font-family: 'Inter', sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
+
+        body { 
+            background: var(--zorin-dark);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            color: var(--text);
+        }
+
+        /* Animated Liquid Background */
+        body::before {
+            content: "";
+            position: absolute;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle at 30% 30%, rgba(0, 120, 255, 0.1) 0%, transparent 40%),
+                        radial-gradient(circle at 70% 70%, rgba(0, 255, 170, 0.05) 0%, transparent 40%);
+            animation: liquidMove 15s ease-in-out infinite alternate;
+            z-index: -1;
+        }
+
+        @keyframes liquidMove {
+            0% { transform: translate(-10%, -10%); }
+            100% { transform: translate(10%, 10%); }
+        }
+
+        .app-card { 
+            background: var(--card-bg); 
+            width: 100%; 
+            max-width: 420px; 
+            padding: 40px; 
+            border-radius: 28px; 
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        h2 { font-size: 24px; margin-bottom: 25px; letter-spacing: -0.5px; }
+        h2 span { color: var(--zorin-blue); }
+
+        .setting-group { text-align: left; margin-bottom: 20px; }
+        label { font-size: 12px; color: var(--text-dim); margin-left: 5px; margin-bottom: 8px; display: block; }
+
+        input { 
+            width: 100%; padding: 14px; border-radius: 12px; 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            background: var(--input-bg); color: white; outline: none;
+            transition: 0.3s;
+        }
+        input:focus { border-color: var(--zorin-blue); box-shadow: 0 0 15px rgba(0, 120, 255, 0.1); }
+
+        .submit-btn { 
+            width: 100%; background: linear-gradient(135deg, #0078ff, #0056b3);
+            color: white; border: none; padding: 16px; border-radius: 14px; 
+            font-weight: 700; cursor: pointer; transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(0, 120, 255, 0.2);
+            margin-top: 10px;
+        }
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(0, 120, 255, 0.3); }
+
+        .back-link { display: inline-block; margin-top: 25px; color: var(--text-dim); text-decoration: none; font-size: 13px; transition: 0.3s; }
         .back-link:hover { color: white; }
-        hr { border: 0; border-top: 1px solid rgba(255,255,255,0.05); margin: 20px 0; }
     </style>
 </head>
 <body>
-    <div class="app-card">
-        <h2>Account Settings</h2>
-        
-        <h4>Update Sparx Details</h4>
-        <input type="email" id="new-sparx-email" placeholder="New School Email">
-        <input type="password" id="new-sparx-pass" placeholder="New School Password">
-        <button class="btn blue" onclick="updateSparx()">Save Sparx Changes</button>
 
-        <hr>
-
-        <h4>Dashboard Security</h4>
-        <input type="password" id="new-dash-pass" placeholder="New Dashboard Password">
-        <button class="btn blue" onclick="updatePass()">Change Dashboard Password</button>
-        
-        <p style="font-size: 10px; color: var(--text-dim); margin-bottom: 20px;">
-            Note: For security, you may be asked to log in again before changing passwords or deleting your account.
-        </p>
-        
-        <button class="btn red" onclick="deleteAccount()">Delete Account Permanently</button>
-
-        <a href="index.html" class="back-link">← Return to Dashboard</a>
+<div class="app-card">
+    <h2>Account <span>Settings</span></h2>
+    
+    <div class="setting-group">
+        <label>Update School Email</label>
+        <input type="email" id="set-sparx-email" placeholder="New School Email">
     </div>
 
+    <div class="setting-group">
+        <label>Update School Password</label>
+        <input type="password" id="set-sparx-pass" placeholder="New School Password">
+    </div>
+
+    <button class="submit-btn" onclick="updateSettings()">Save Changes</button>
+
+    <a href="index.html" class="back-link">← Back to Dashboard</a>
+</div>
+
 <script>
-// YOUR FIREBASE CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyABBpThk_bHj5Ze06MgmKqgkUAY2__V-bU",
   authDomain: "zorinai-464ac.firebaseapp.com",
@@ -67,63 +122,29 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// 1. UPDATE SPARX CREDENTIALS
-async function updateSparx() {
-    const user = auth.currentUser;
-    if (!user) return alert("You must be logged in.");
+auth.onAuthStateChanged(async (user) => {
+    if (!user) { window.location.href = "index.html"; return; }
+    const doc = await db.collection('users').doc(user.uid).get();
+    if (doc.exists) {
+        document.getElementById('set-sparx-email').value = doc.data().sparxEmail || "";
+    }
+});
 
-    const se = document.getElementById('new-sparx-email').value;
-    const sp = document.getElementById('new-sparx-pass').value;
-    
-    if(!se || !sp) return alert("Please fill in both fields.");
+async function updateSettings() {
+    const user = auth.currentUser;
+    const email = document.getElementById('set-sparx-email').value;
+    const pass = document.getElementById('set-sparx-pass').value;
+
+    if (!email) return alert("Email is required");
 
     try {
-        await db.collection('users').doc(user.uid).update({
-            sparxEmail: se,
-            sparxPass: sp
-        });
-        alert("Sparx credentials updated successfully!");
+        const updateData = { sparxEmail: email };
+        if (pass) updateData.sparxPass = pass;
+
+        await db.collection('users').doc(user.uid).update(updateData);
+        alert("Settings updated successfully!");
     } catch (err) {
         alert("Error: " + err.message);
-    }
-}
-
-// 2. CHANGE DASHBOARD PASSWORD
-async function updatePass() {
-    const user = auth.currentUser;
-    const newPass = document.getElementById('new-dash-pass').value;
-
-    if (newPass.length < 6) return alert("Password must be at least 6 characters.");
-
-    try {
-        await user.updatePassword(newPass);
-        alert("Password updated! Please use your new password next time you log in.");
-    } catch (err) {
-        alert("Security: Please log out and log back in before changing your password.");
-    }
-}
-
-// 3. DELETE ACCOUNT
-async function deleteAccount() {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    const confirmFirst = confirm("WARNING: This will delete your profile, saved credentials, and any remaining access time. This cannot be undone.");
-    
-    if (confirmFirst) {
-        const confirmSecond = confirm("Are you absolutely 100% sure?");
-        if (confirmSecond) {
-            try {
-                // Delete from Firestore first
-                await db.collection('users').doc(user.uid).delete();
-                // Delete from Auth
-                await user.delete();
-                alert("Account deleted.");
-                window.location.href = "index.html";
-            } catch (err) {
-                alert("Security: Please log out and log back in before deleting your account.");
-            }
-        }
     }
 }
 </script>
